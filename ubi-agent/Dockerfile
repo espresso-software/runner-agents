@@ -5,7 +5,7 @@ FROM redhat/ubi8-minimal AS unpack
 ARG agent_file=actions-runner.tar.gz
 RUN mkdir -p /tmp/agent
 COPY files/${agent_file} /tmp/agent/
-RUN microdnf update -y; \
+RUN microdnf clean all -y; \
   microdnf install -y tar gzip; \
   tar -xzf /tmp/agent/${agent_file} -C /tmp/agent/; \
   rm -f /tmp/agent/${agent_file}; \
@@ -15,7 +15,6 @@ FROM redhat/ubi8-minimal:8.10 AS agent
 
 ### INSTALL DEPENDENCIES
 RUN ln -sf /usr/bin/microdnf /usr/bin/yum; \
-  yum update -y; \
   yum install -y \
   git \
   gzip \
