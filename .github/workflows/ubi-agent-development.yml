@@ -20,7 +20,7 @@ on:
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
   GITHUB_ACTIONS_VERSION: '2.321.0'
-  GITHUB_ACTIONS_DOWNLOAD_DESTINATION: ubi-agent/files/actions-runner.tar.gz
+  BUILD_DIR: ${{ github.workspace }}/ubi-agent
 
 jobs:
   #TODO: Versioning
@@ -43,7 +43,7 @@ jobs:
         with:
           actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
           targetarch: ${{ env.TARGETARCH }}
-          actions_tar_destination: ${{ env.GITHUB_ACTIONS_DOWNLOAD_DESTINATION }}
+          build_directory: ${{ env.BUILD_DIR }}
           tag: arm64-develop-${{ github.run_number }}
           platform: ${{ runner.os }}
   
@@ -68,7 +68,7 @@ jobs:
         with:
           actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
           targetarch: ${{ env.TARGETARCH }}
-          actions_tar_destination: ${{ env.GITHUB_ACTIONS_DOWNLOAD_DESTINATION }}
+          build_directory: ${{ env.BUILD_DIR }}
           tag: x64-develop-${{ github.run_number }}
           platform: ${{ runner.os }}
   
