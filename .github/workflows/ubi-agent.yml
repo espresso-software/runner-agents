@@ -9,7 +9,7 @@ on:
       - main
     paths:
       - ubi-agent/**
-      - .github/workflows/ubi-agent-development.yml
+      - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
   pull_request:
     branches:
@@ -17,7 +17,7 @@ on:
     paths:
       - ubi-agent/**
       - ubi-agent.yml
-      - .github/workflows/ubi-agent-development.yml
+      - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
       - roles/uat-deploy/**
   schedule:
