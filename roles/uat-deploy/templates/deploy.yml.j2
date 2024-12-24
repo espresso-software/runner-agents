@@ -7,7 +7,7 @@ metadata:
   labels:
     app: "{{ stateful_set_name }}"
 spec:
-  serviceName: ""{{ stateful_set_name }}""
+  serviceName: "{{ stateful_set_name }}"
   replicas: 1
   selector:
     matchLabels:

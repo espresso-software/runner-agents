@@ -12,7 +12,8 @@ RUN microdnf install -y tar gzip; \
 
 FROM redhat/ubi8-minimal:8.10 AS agent
 LABEL maintainer="Ty Foster"
-LABEL agent-platform="GitHub Actions Runner"
+LABEL description="GitHub Actions Runner base image"
+
 
 ### INSTALL DEPENDENCIES
 RUN ln -sf /usr/bin/microdnf /usr/bin/yum; \
