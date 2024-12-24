@@ -38,7 +38,7 @@ jobs:
       - name: Build and publish image
         uses: ./.github/actions/ubi-agent-build
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
         with:
           actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
@@ -63,7 +63,7 @@ jobs:
       - name: Build and publish image
         uses: ./.github/actions/ubi-agent-build
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
         with:
           actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
