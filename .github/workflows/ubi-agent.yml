@@ -33,10 +33,15 @@ jobs:
     runs-on:
       - self-hosted
       - docker
+    outputs:
+      x64_tag: x64-${{ steps.get_version.outputs.version }}
+      arm64_tag: arm64-${{ steps.get_version.outputs.version }}
+      common_tag: ${{ steps.get_version.outputs.version }}
     
     steps:
       - uses: actions/checkout@v2
-      #TODO: Versioning
+      - uses: espresso-software/actions/common/versioning@feature/docker-actions
+        id: get_version
   
   arm64-build:
     needs:
@@ -60,7 +65,7 @@ jobs:
           actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
           targetarch: ${{ env.TARGETARCH }}
           build_directory: ${{ env.BUILD_DIR }}
-          tag: arm64-develop-${{ github.run_number }}
+          tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
   
   x64-build:
     # if: github.event.pull_request || github.event_name == 'schedule'
@@ -86,10 +91,11 @@ jobs:
           actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
           targetarch: ${{ env.TARGETARCH }}
           build_directory: ${{ env.BUILD_DIR }}
-          tag: x64-develop-${{ github.run_number }}
+          tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
 
   deploy:
     needs: 
+      - versioning
       - arm64-build
       - x64-build
     runs-on:
@@ -97,27 +103,34 @@ jobs:
       - ansible
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.READ_ACCESS_TOKEN }}
       - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: ubi-agent.yml
           inventory_path: inventory/hosts.ini
-          vars: tag=arm64-develop-${{ github.run_number }}
+          vars: tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
   
   promote:
     needs: 
+      - versioning
       - deploy
     runs-on:
       - self-hosted
       - docker
+    env:
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
     steps:
       - name: Promote x64 image
         uses: espresso-software/actions/docker/promote@feature/docker-actions
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
-          old_tag: x64-develop-${{ github.run_number }}
-          promote_tag: x64-${{ github.run_number }}
+          old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
+          promote_tag: ${{ needs.versioning.outputs.x64_tag }}
           promote_latest: 'true'
           promote_custom_latest: x64-latest
       
@@ -125,8 +138,8 @@ jobs:
         uses: espresso-software/actions/docker/promote@feature/docker-actions
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
-          old_tag: x64-develop-${{ github.run_number }}
-          promote_tag: arm64-${{ github.run_number }}
+          old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+          promote_tag: ${{ needs.versioning.outputs.arm64_tag }}
           promote_latest: 'true'
           promote_custom_latest: arm64-latest
       
@@ -142,9 +155,9 @@ jobs:
         uses: espresso-software/actions/docker/common-tag@feature/docker-actions
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: release
-          x64_tag: x64-${{ github.run_number }}
-          arm64_tag: arm64-${{ github.run_number }}
+          tag: ${{ needs.versioning.outputs.common_tag }}
+          x64_tag: ${{ needs.versioning.outputs.x64_tag }}
+          arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
     
         
