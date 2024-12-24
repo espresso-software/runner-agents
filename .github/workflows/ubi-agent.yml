@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Ubi Agent Development Build
+name: Ubi Agent Build and Deploy
 
 # Controls when the workflow will run
 on:
@@ -19,6 +19,9 @@ on:
       - ubi-agent.yml
       - .github/workflows/ubi-agent-development.yml
       - .github/actions/ubi-agent-build/**
+      - roles/uat-deploy/**
+  schedule:
+    - cron: '0 12 * * 5'
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
@@ -59,7 +62,7 @@ jobs:
           platform: ${{ runner.os }}
   
   x64-build:
-    if: github.event.pull_request
+    #if: github.event.pull_request || github.event_name == 'schedule'
     runs-on:
       - self-hosted
       - docker
@@ -85,7 +88,7 @@ jobs:
   
   arm64-latest:
     needs: arm64-build
-    if: github.event.pull_request
+    if: github.event.pull_request || github.event_name == 'schedule'
     runs-on:
       - self-hosted
       - docker
@@ -94,8 +97,6 @@ jobs:
       TARGETARCH: linux-arm64
   
     steps:
-      - uses: actions/checkout@v2
-
       - name: Promote arm64 image
         uses: espresso-software/actions/docker/promote@feature/docker-actions
         with:
@@ -104,9 +105,9 @@ jobs:
           promote_tag: arm64-SNAPSHOT-latest
           promote_latest: 'false'
 
-  #TODO: Deploy uat service
   deploy:
-    needs: arm64-latest
+    needs: 
+      - arm64-latest
     runs-on:
       - self-hosted
       - ansible
@@ -116,9 +117,49 @@ jobs:
         with:
           playbook_path: ubi-agent.yml
           inventory_path: inventory/hosts.ini
-  #TODO: Promote SNAPSHOT image to release image
-
-  #TODO: Create manifest for release image
+  
+  promote:
+    needs: 
+      - deploy
+      - x64-build
+      - arm64-build
+    runs-on:
+      - self-hosted
+      - docker
+    steps:
+      - name: Promote x64 image
+        uses: espresso-software/actions/docker/promote@feature/docker-actions
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          old_tag: x64-develop-${{ github.run_number }}
+          promote_tag: x64-${{ github.run_number }}
+          promote_latest: 'true'
+          promote_custom_latest: x64-latest
+      
+      - name: Promote arm64 image
+        uses: espresso-software/actions/docker/promote@feature/docker-actions
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          old_tag: x64-develop-${{ github.run_number }}
+          promote_tag: arm64-${{ github.run_number }}
+          promote_latest: 'true'
+          promote_custom_latest: arm64-latest
+      
+      - name: Create latest manifest
+        uses: espresso-software/actions/docker/common-tag@feature/docker-actions
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: latest
+          x64_tag: x64-latest
+          arm64_tag: arm64-latest
+      
+      - name: Create release manifest
+        uses: espresso-software/actions/docker/common-tag@feature/docker-actions
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: release
+          x64_tag: x64-${{ github.run_number }}
+          arm64_tag: arm64-${{ github.run_number }}
       
     
         
