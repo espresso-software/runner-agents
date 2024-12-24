@@ -1,0 +1,20 @@
+---
+- name: Cleanup DEV Agent
+  hosts: k3s_managers
+  run_once: true
+  environment:
+    KUBECONFIG: "{{ kube_config_path }}"
+  vars:
+    stateful_set_name: "ubi-agent"
+  roles:
+    - cleanup
+
+- name: Deploy DEV Agent
+  hosts: k3s_managers
+  run_once: true
+  environment:
+    KUBECONFIG: "{{ kube_config_path }}"
+  vars:
+    stateful_set_name: "ubi-agent"
+  roles:
+    - uat-deploy

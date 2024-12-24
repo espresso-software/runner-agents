@@ -10,12 +10,15 @@ on:
     paths:
       - ubi-agent/**
       - .github/workflows/ubi-agent-development.yml
+      - .github/actions/ubi-agent-build/**
   pull_request:
     branches:
       - main
     paths:
       - ubi-agent/**
+      - ubi-agent.yml
       - .github/workflows/ubi-agent-development.yml
+      - .github/actions/ubi-agent-build/**
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
@@ -23,7 +26,15 @@ env:
   BUILD_DIR: ubi-agent
 
 jobs:
-  #TODO: Versioning
+  versioning:
+    runs-on:
+      - self-hosted
+      - docker
+    
+    steps:
+      - uses: actions/checkout@v2
+      #TODO: Versioning
+  
   arm64-build:
     runs-on:
       - self-hosted
@@ -72,7 +83,42 @@ jobs:
           tag: x64-develop-${{ github.run_number }}
           platform: ${{ runner.os }}
   
+  arm64-latest:
+    needs: arm64-build
+    if: github.event.pull_request
+    runs-on:
+      - self-hosted
+      - docker
+      - ARM64
+    env:
+      TARGETARCH: linux-arm64
   
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Promote arm64 image
+        uses: espresso-software/actions/docker/promote@feature/docker-actions
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          old_tag: arm64-develop-${{ github.run_number }}
+          promote_tag: arm64-SNAPSHOT-latest
+          promote_latest: 'false'
+
+  #TODO: Deploy uat service
+  deploy:
+    needs: arm64-latest
+    runs-on:
+      - self-hosted
+      - ansible
+    steps:
+      - uses: actions/checkout@v2
+      - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
+        with:
+          playbook_path: ubi-agent.yml
+          inventory_path: inventory/hosts.ini
+  #TODO: Promote SNAPSHOT image to release image
+
+  #TODO: Create manifest for release image
       
     
         
