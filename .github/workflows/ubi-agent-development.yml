@@ -20,7 +20,7 @@ on:
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
   GITHUB_ACTIONS_VERSION: '2.321.0'
-  BUILD_DIR: ${{ github.workspace }}/ubi-agent
+  BUILD_DIR: ubi-agent
 
 jobs:
   #TODO: Versioning
