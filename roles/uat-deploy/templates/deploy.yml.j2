@@ -24,7 +24,7 @@ spec:
         kubernetes.io/arch: arm64
       containers:
       - name: github-actions-runner
-        image: coffee206/github-actions:arm64-SNAPSHOT-latest
+        image: coffee206/github-actions:{{ tag }}
         imagePullPolicy: Always
         resources:
           limits:

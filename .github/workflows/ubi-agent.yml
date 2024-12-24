@@ -39,6 +39,8 @@ jobs:
       #TODO: Versioning
   
   arm64-build:
+    needs:
+      - versioning
     runs-on:
       - self-hosted
       - docker
@@ -63,6 +65,8 @@ jobs:
   
   x64-build:
     #if: github.event.pull_request || github.event_name == 'schedule'
+    needs:
+      - versioning
     runs-on:
       - self-hosted
       - docker
@@ -85,29 +89,11 @@ jobs:
           build_directory: ${{ env.BUILD_DIR }}
           tag: x64-develop-${{ github.run_number }}
           platform: ${{ runner.os }}
-  
-  arm64-latest:
-    needs: arm64-build
-    if: github.event.pull_request || github.event_name == 'schedule'
-    runs-on:
-      - self-hosted
-      - docker
-      - ARM64
-    env:
-      TARGETARCH: linux-arm64
-  
-    steps:
-      - name: Promote arm64 image
-        uses: espresso-software/actions/docker/promote@feature/docker-actions
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          old_tag: arm64-develop-${{ github.run_number }}
-          promote_tag: arm64-SNAPSHOT-latest
-          promote_latest: 'false'
 
   deploy:
     needs: 
-      - arm64-latest
+      - arm64-build
+      - x64-build
     runs-on:
       - self-hosted
       - ansible
@@ -117,12 +103,11 @@ jobs:
         with:
           playbook_path: ubi-agent.yml
           inventory_path: inventory/hosts.ini
+          vars: tag=arm64-develop-${{ github.run_number }}
   
   promote:
     needs: 
       - deploy
-      - x64-build
-      - arm64-build
     runs-on:
       - self-hosted
       - docker
