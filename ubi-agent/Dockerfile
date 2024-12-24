@@ -1,20 +1,25 @@
-FROM redhat/ubi8 AS unpack
+FROM redhat/ubi8-minimal AS unpack
 
 ### UNPACK AGENT FILES
 # Unpack as root to avoid using USER statements to switch back and forth
 ARG agent_file=actions-runner.tar.gz
 RUN mkdir -p /tmp/agent
 COPY files/${agent_file} /tmp/agent/
-RUN tar -xzf /tmp/agent/${agent_file} -C /tmp/agent/; \
+RUN microdnf install -y tar gzip; \
+  tar -xzf /tmp/agent/${agent_file} -C /tmp/agent/; \
   rm -f /tmp/agent/${agent_file}; \
   chmod 500 /tmp/agent/config.sh;
 
-FROM redhat/ubi8:8.10 AS agent
+FROM redhat/ubi8-minimal:8.10 AS agent
 
 ### INSTALL DEPENDENCIES
-RUN yum install -y \
+RUN ln -sf /usr/bin/microdnf /usr/bin/yum; \
+  yum install -y \
   git \
-  jq; \
+  gzip \
+  jq \
+  shadow-utils \
+  tar; \
   yum clean all;
 
 ### SETUP AGENT WORKSPACE
