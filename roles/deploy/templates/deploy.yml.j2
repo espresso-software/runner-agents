@@ -8,7 +8,7 @@ metadata:
     app: "{{ stateful_set_name }}"
 spec:
   serviceName: "{{ stateful_set_name }}"
-  replicas: 1
+  replicas: {{ replicas | default(1) }}
   selector:
     matchLabels:
       app: "{{ stateful_set_name }}"
@@ -21,18 +21,18 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/role: worker
-        kubernetes.io/arch: arm64
+        kubernetes.io/arch: {{ arch }}
       containers:
       - name: github-actions-runner
         image: coffee206/github-actions:{{ tag }}
         imagePullPolicy: Always
         resources:
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: "{{ cpu_limits | default('500m') }}"
+            memory: "{{ mem_limits | default('512Mi') }}"
           requests:
-            cpu: 250m
-            memory: 256Mi
+            cpu: "{{ cpu_requests | default('250m') }}"
+            memory: "{{ mem_requests | default('256Mi') }}"
         volumeMounts:
           - name: docker-socket
             mountPath: /var/run/docker.sock
@@ -42,7 +42,7 @@ spec:
           - name: TOKEN
             valueFrom:
               secretKeyRef:
-                name: gh-uat-token
+                name: gh-actions-token
                 key: TOKEN
           - name: GH_ACTIONS_HC_TOKEN
             valueFrom:
