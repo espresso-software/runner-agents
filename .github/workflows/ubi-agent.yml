@@ -118,6 +118,13 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
+          playbook_path: cleanup.yml
+          inventory_path: inventory/hosts.ini
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+      - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT

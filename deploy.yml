@@ -1,13 +1,4 @@
 ---
-- name: Cleanup DEV Agent
-  hosts: k3s_managers
-  run_once: true
-  become: true
-  environment:
-    KUBECONFIG: "{{ kube_config_path }}"
-  roles:
-    - cleanup
-
 - name: Deploy DEV Agent
   hosts: k3s_managers
   run_once: true
