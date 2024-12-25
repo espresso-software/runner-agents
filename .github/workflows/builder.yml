@@ -96,7 +96,6 @@ jobs:
     needs: 
       - versioning
       - x64-build
-      - arm64-build
     runs-on:
       - self-hosted
       - ansible
@@ -126,6 +125,8 @@ jobs:
   promote: 
     needs: 
       - versioning
+      - x64-build
+      - arm64-build
       - uat-deploy
     runs-on:
       - self-hosted

@@ -54,6 +54,12 @@
     apply: yes
     src: "{{ tempfile.path }}/k8s.yml"
 
+- name: Scale StatefulSet
+  kubernetes.core.k8s_scale:
+    name: "{{ stateful_set_name }}"
+    namespace: "{{ namespace }}"
+    replicas: "{{ replicas | default(1) }}"
+
 - name: Wait for Deployment to be Ready
   kubernetes.core.k8s_info:
     kind: StatefulSet
