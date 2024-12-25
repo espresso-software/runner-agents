@@ -19,4 +19,4 @@
   vars:
     stateful_set_name: "ubi-agent"
   roles:
-    - uat-deploy
+    - deploy
