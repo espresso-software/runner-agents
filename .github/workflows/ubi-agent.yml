@@ -44,7 +44,7 @@ jobs:
     
     steps:
       - uses: actions/checkout@v2
-      - uses: espresso-software/actions/common/versioning@feature/docker-actions
+      - uses: espresso-software/actions/common/versioning@main
         id: get_version
         with:
           version_file: ubi-agent/version.json
@@ -114,14 +114,14 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
+      - uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
-      - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
+      - uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
@@ -143,7 +143,7 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
     steps:
       - name: Promote x64 image
-        uses: espresso-software/actions/docker/promote@feature/docker-actions
+        uses: espresso-software/actions/docker/promote@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
@@ -151,7 +151,7 @@ jobs:
           skip_cleanup: 'true'
       
       - name: Promote arm64 image
-        uses: espresso-software/actions/docker/promote@feature/docker-actions
+        uses: espresso-software/actions/docker/promote@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
@@ -159,7 +159,7 @@ jobs:
           skip_cleanup: 'true'
       
       - name: Create release manifest
-        uses: espresso-software/actions/docker/common-tag@feature/docker-actions
+        uses: espresso-software/actions/docker/common-tag@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.common_tag }}
@@ -167,7 +167,7 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
       - name: Create latest manifest
-        uses: espresso-software/actions/docker/common-tag@feature/docker-actions
+        uses: espresso-software/actions/docker/common-tag@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: latest
@@ -185,7 +185,7 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
+      - uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
