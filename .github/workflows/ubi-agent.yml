@@ -139,8 +139,6 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
           promote_tag: ${{ needs.versioning.outputs.x64_tag }}
-          promote_latest: 'true'
-          promote_custom_latest: x64-latest
       
       - name: Promote arm64 image
         uses: espresso-software/actions/docker/promote@feature/docker-actions
@@ -148,22 +146,20 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
           promote_tag: ${{ needs.versioning.outputs.arm64_tag }}
-          promote_latest: 'true'
-          promote_custom_latest: arm64-latest
-      
-      - name: Create latest manifest
-        uses: espresso-software/actions/docker/common-tag@feature/docker-actions
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: latest
-          x64_tag: x64-latest
-          arm64_tag: arm64-latest
       
       - name: Create release manifest
         uses: espresso-software/actions/docker/common-tag@feature/docker-actions
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.common_tag }}
+          x64_tag: ${{ needs.versioning.outputs.x64_tag }}
+          arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
+      
+      - name: Create latest manifest
+        uses: espresso-software/actions/docker/common-tag@feature/docker-actions
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: latest
           x64_tag: ${{ needs.versioning.outputs.x64_tag }}
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
