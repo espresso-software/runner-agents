@@ -44,6 +44,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: espresso-software/actions/common/versioning@feature/docker-actions
         id: get_version
+        with:
+          version_file: ubi-agent/version.json
   
   arm64-build:
     needs:
