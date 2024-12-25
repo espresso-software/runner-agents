@@ -58,7 +58,7 @@
 - name: Wait for Deployment to be Ready
   kubernetes.core.k8s_info:
     kind: StatefulSet
-    name: build
+    name: "{{ stateful_set_name }}"
     namespace: "{{ namespace }}"
   register: deployment_info
   until: deployment_info.resources[0].status.availableReplicas == 1
