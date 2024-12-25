@@ -148,6 +148,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
           promote_tag: ${{ needs.versioning.outputs.x64_tag }}
+          skip_cleanup: 'true'
       
       - name: Promote arm64 image
         uses: espresso-software/actions/docker/promote@feature/docker-actions
@@ -155,6 +156,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
           promote_tag: ${{ needs.versioning.outputs.arm64_tag }}
+          skip_cleanup: 'true'
       
       - name: Create release manifest
         uses: espresso-software/actions/docker/common-tag@feature/docker-actions
