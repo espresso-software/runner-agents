@@ -60,6 +60,6 @@
     name: "{{ stateful_set_name }}"
     namespace: "{{ namespace }}"
   register: deployment_info
-  until: deployment_info.resources[0].status.availableReplicas == ( replicas | default(1) )
+  until: deployment_info.resources[0].status.availableReplicas == deployment_info.resources[0].status.replicas
   retries: 60
   delay: 10
