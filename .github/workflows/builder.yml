@@ -53,7 +53,10 @@ jobs:
           version_file: builder/version.json
   
   arm64-build:
+    # uncomment below to speedrun the uat-deployment
+    if: false
     needs:
+      - versioning
       - versioning
     runs-on:
       - self-hosted
