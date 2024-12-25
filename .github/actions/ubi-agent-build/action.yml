@@ -23,13 +23,13 @@ runs:
   using: composite
   steps:
     - name: Download agent file
-      uses: espresso-software/actions/common/download-file@feature/docker-actions
+      uses: espresso-software/actions/common/download-file@main
       with:
         url: https://github.com/actions/runner/releases/download/v${{ inputs.actions_version }}/actions-runner-${{ inputs.targetarch }}-${{ inputs.actions_version }}.tar.gz
         destination: ${{ inputs.build_directory }}/files/actions-runner.tar.gz
 
     - name: Publish Docker Image
-      uses: espresso-software/actions/docker/build-and-push@feature/docker-actions
+      uses: espresso-software/actions/docker/build-and-push@main
       with:
         repository: ${{ env.DOCKER_REPOSITORY }}
         tag: ${{ inputs.tag }}
