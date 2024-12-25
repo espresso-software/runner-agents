@@ -12,8 +12,8 @@ on:
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
       # Uncomment below for deployment feature development
-      - roles/uat-deploy/**
-      - deploy.yml
+      # - roles/uat-deploy/**
+      # - deploy.yml
   pull_request:
     branches:
       - main
@@ -75,7 +75,7 @@ jobs:
   
   x64-build:
     # comment this line to debug the entire pipeline
-    # if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule'
     # TODO: add second x64 worker and run both builds for all feature lanes
     needs:
       - versioning
