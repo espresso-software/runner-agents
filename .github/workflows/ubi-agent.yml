@@ -36,9 +36,9 @@ jobs:
       - self-hosted
       - docker
     outputs:
-      x64_tag: x64-${{ steps.get_version.outputs.version }}
-      arm64_tag: arm64-${{ steps.get_version.outputs.version }}
-      common_tag: ${{ steps.get_version.outputs.version }}
+      x64_tag: x64-${{ env.IMAGE_VERSION }}
+      arm64_tag: arm64-${{ env.IMAGE_VERSION }}
+      common_tag: ${{ env.IMAGE_VERSION }}
     
     steps:
       - uses: actions/checkout@v2
