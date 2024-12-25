@@ -122,7 +122,7 @@ jobs:
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=x64
+          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=amd64
 
   promote: 
     needs: 
@@ -219,4 +219,4 @@ jobs:
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=x64-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.common_tag }} arch=x64 replicas=2      
+          vars: stateful_set_name=x64-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.common_tag }} arch=amd64 replicas=2      
