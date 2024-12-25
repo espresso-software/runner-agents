@@ -54,18 +54,12 @@
     apply: yes
     src: "{{ tempfile.path }}/k8s.yml"
 
-- name: Scale StatefulSet
-  kubernetes.core.k8s_scale:
-    name: "{{ stateful_set_name }}"
-    namespace: "{{ namespace }}"
-    replicas: "{{ replicas | default(1) }}"
-
 - name: Wait for Deployment to be Ready
   kubernetes.core.k8s_info:
     kind: StatefulSet
     name: "{{ stateful_set_name }}"
     namespace: "{{ namespace }}"
   register: deployment_info
-  until: deployment_info.resources[0].status.availableReplicas == {{ replicas | default(1) }}
+  until: deployment_info.resources[0].status.availableReplicas == ( replicas | default(1) )
   retries: 60
   delay: 10

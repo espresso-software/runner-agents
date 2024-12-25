@@ -57,7 +57,6 @@ jobs:
     if: false
     needs:
       - versioning
-      - versioning
     runs-on:
       - self-hosted
       - docker
