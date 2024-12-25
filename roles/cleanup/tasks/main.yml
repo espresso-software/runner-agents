@@ -1,0 +1,10 @@
+---
+- name: delete Deployment
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: "{{ stateful_set_name }}"
+        namespace: "devops"

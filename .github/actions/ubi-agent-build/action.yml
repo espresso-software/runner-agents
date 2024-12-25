@@ -16,6 +16,9 @@ inputs:
   platform:
     description: Platform to build
     required: true
+  build_directory:
+    description: Build directory
+    required: true
 runs:
   using: composite
   steps:
@@ -23,11 +26,11 @@ runs:
       uses: espresso-software/actions/common/download-file@feature/docker-actions
       with:
         url: https://github.com/actions/runner/releases/download/v${{ inputs.actions_version }}/actions-runner-${{ inputs.targetarch }}-${{ inputs.actions_version }}.tar.gz
-        destination: ${{ inputs.actions_tar_destination }}
+        destination: ${{ inputs.build_directory }}/files/actions-runner.tar.gz
 
     - name: Publish Docker Image
       uses: espresso-software/actions/docker/build-and-push@feature/docker-actions
       with:
         repository: ${{ env.DOCKER_REPOSITORY }}
         tag: ${{ inputs.tag }}
-        build_dir: ubi-agent
+        build_dir: ${{ inputs.build_directory }}

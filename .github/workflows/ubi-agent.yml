@@ -1,0 +1,197 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Ubi Agent Build and Deploy
+
+# Controls when the workflow will run
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - ubi-agent/**
+      - .github/workflows/ubi-agent.yml
+      - .github/actions/ubi-agent-build/**
+      # Uncomment below for deployment feature development
+      # - roles/uat-deploy/**
+      # - deploy.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ubi-agent/**
+      - deploy.yml
+      - .github/workflows/ubi-agent.yml
+      - .github/actions/ubi-agent-build/**
+      - roles/uat-deploy/**
+  schedule:
+    - cron: '0 12 * * 5'
+
+env:
+  DOCKER_REPOSITORY: coffee206/github-actions
+  GITHUB_ACTIONS_VERSION: '2.321.0'
+  BUILD_DIR: ubi-agent
+  STATEFUL_SET_NAME: ubi-agent
+
+jobs:
+  versioning:
+    runs-on:
+      - self-hosted
+      - docker
+    outputs:
+      x64_tag: x64-${{ env.IMAGE_VERSION }}
+      arm64_tag: arm64-${{ env.IMAGE_VERSION }}
+      common_tag: ${{ env.IMAGE_VERSION }}
+    
+    steps:
+      - uses: actions/checkout@v2
+      - uses: espresso-software/actions/common/versioning@main
+        id: get_version
+        with:
+          version_file: ubi-agent/version.json
+  
+  arm64-build:
+    needs:
+      - versioning
+    runs-on:
+      - self-hosted
+      - docker
+      - ARM64
+    env:
+      TARGETARCH: linux-arm64
+  
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and publish image
+        uses: ./.github/actions/ubi-agent-build
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+        with:
+          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+          targetarch: ${{ env.TARGETARCH }}
+          build_directory: ${{ env.BUILD_DIR }}
+          tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+  
+  x64-build:
+    # comment this line to debug the entire pipeline
+    if: github.event.pull_request || github.event_name == 'schedule'
+    # TODO: add second x64 worker and run both builds for all feature lanes
+    needs:
+      - versioning
+    runs-on:
+      - self-hosted
+      - docker
+      - x64
+    
+    env:
+      TARGETARCH: linux-x64
+  
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Build and publish image
+        uses: ./.github/actions/ubi-agent-build
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+        with:
+          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+          targetarch: ${{ env.TARGETARCH }}
+          build_directory: ${{ env.BUILD_DIR }}
+          tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
+
+  deploy:
+    needs: 
+      - versioning
+      - arm64-build
+      - x64-build
+    runs-on:
+      - self-hosted
+      - ansible
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.READ_ACCESS_TOKEN }}
+      - uses: espresso-software/actions/ansible/run-playbook@main
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
+          playbook_path: cleanup.yml
+          inventory_path: inventory/hosts.ini
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+      - uses: espresso-software/actions/ansible/run-playbook@main
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
+          playbook_path: deploy.yml
+          inventory_path: inventory/hosts.ini
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+  
+  promote:
+    needs: 
+      - versioning
+      - arm64-build
+      - x64-build
+      - deploy
+    runs-on:
+      - self-hosted
+      - docker
+    env:
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+    steps:
+      - name: Promote x64 image
+        uses: espresso-software/actions/docker/promote@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
+          promote_tag: ${{ needs.versioning.outputs.x64_tag }}
+          skip_cleanup: 'true'
+      
+      - name: Promote arm64 image
+        uses: espresso-software/actions/docker/promote@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+          promote_tag: ${{ needs.versioning.outputs.arm64_tag }}
+          skip_cleanup: 'true'
+      
+      - name: Create release manifest
+        uses: espresso-software/actions/docker/common-tag@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: ${{ needs.versioning.outputs.common_tag }}
+          x64_tag: ${{ needs.versioning.outputs.x64_tag }}
+          arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
+      
+      - name: Create latest manifest
+        uses: espresso-software/actions/docker/common-tag@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: latest
+          x64_tag: ${{ needs.versioning.outputs.x64_tag }}
+          arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
+      
+  cleanup:
+    needs:
+      - deploy
+    runs-on:
+      - self-hosted
+      - ansible
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.READ_ACCESS_TOKEN }}
+      - uses: espresso-software/actions/ansible/run-playbook@main
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
+          playbook_path: cleanup.yml
+          inventory_path: inventory/hosts.ini
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+
+        
+        

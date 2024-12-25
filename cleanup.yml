@@ -1,0 +1,9 @@
+---
+- name: Deploy DEV Agent
+  hosts: k3s_managers
+  run_once: true
+  become: true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  roles:
+    - cleanup
