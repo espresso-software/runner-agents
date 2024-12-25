@@ -13,12 +13,13 @@ on:
       - .github/actions/ubi-agent-build/**
       # Uncomment below for deployment feature development
       - roles/uat-deploy/**
+      - deploy.yml
   pull_request:
     branches:
       - main
     paths:
       - ubi-agent/**
-      - ubi-agent.yml
+      - deploy.yml
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
       - roles/uat-deploy/**
@@ -29,6 +30,7 @@ env:
   DOCKER_REPOSITORY: coffee206/github-actions
   GITHUB_ACTIONS_VERSION: '2.321.0'
   BUILD_DIR: ubi-agent
+  STATEFUL_SET_NAME: ubi-agent
 
 jobs:
   versioning:
@@ -116,9 +118,9 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: ubi-agent.yml
+          playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
-          vars: tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
   
   promote:
     needs: 
@@ -166,7 +168,22 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
   #TODO: cleanup
-        
+  cleanup:
+    runs-on:
+      - self-hosted
+      - ansible
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          token: ${{ secrets.READ_ACCESS_TOKEN }}
+      - uses: espresso-software/actions/ansible/run-playbook@feature/docker-actions
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
+          playbook_path: cleanup.yml
+          inventory_path: inventory/hosts.ini
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
 
         
         

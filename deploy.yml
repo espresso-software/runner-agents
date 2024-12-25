@@ -5,8 +5,6 @@
   become: true
   environment:
     KUBECONFIG: "{{ kube_config_path }}"
-  vars:
-    stateful_set_name: "ubi-agent"
   roles:
     - cleanup
 
@@ -16,7 +14,5 @@
   become: true
   environment:
     KUBECONFIG: "{{ kube_config_path }}"
-  vars:
-    stateful_set_name: "ubi-agent"
   roles:
     - deploy
