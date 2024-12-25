@@ -191,6 +191,7 @@ jobs:
     needs: 
       - versioning
       - promote
+      - arm64-build
       - uat-deploy
     runs-on:
       - self-hosted
@@ -204,13 +205,6 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=arm64-${{ env.STATEFUL_SET_NAME }}
-      - uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=arm64-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.common_tag }} arch=arm64 replicas=2
@@ -220,7 +214,7 @@ jobs:
     needs: 
       - versioning
       - promote
-      - arm64-deploy
+      - x64-build
     runs-on:
       - self-hosted
       - ansible
@@ -229,13 +223,6 @@ jobs:
         with:
           submodules: 'recursive'
           token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=x64-${{ env.STATEFUL_SET_NAME }}
       - uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
