@@ -23,7 +23,7 @@ spec:
         kubernetes.io/role: worker
         kubernetes.io/arch: {{ arch }}
       containers:
-      - name: github-actions-runner
+      - name: agent
         image: coffee206/github-actions:{{ tag }}
         imagePullPolicy: Always
         resources:
