@@ -42,7 +42,7 @@ spec:
             cpu: {{ cpu_limits | default('500m') }}
             memory: {{ mem_limits | default('512Mi') }}
           requests:
-            cpu: {{ cpu_requests | default('250m') }}
+            cpu: {{ cpu_requests | default('100m') }}
             memory: {{ mem_requests | default('256Mi') }}
         volumeMounts:
           - name: docker-socket
