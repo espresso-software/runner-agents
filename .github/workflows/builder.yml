@@ -14,10 +14,9 @@ on:
     paths:
       - builder/**
       - .github/workflows/builder.yml
-      - .github/actions/builder-build/**
       # Uncomment below for deployment feature development
-      - roles/deploy/**
-      - deploy.yml
+      # - roles/deploy/**
+      # - deploy.yml
   pull_request:
     branches:
       - main
@@ -25,7 +24,6 @@ on:
       - builder/**
       - deploy.yml
       - .github/workflows/builder.yml
-      - .github/actions/builder-build/**
       - roles/deploy/**
   schedule:
     - cron: '0 12 * * 6'
