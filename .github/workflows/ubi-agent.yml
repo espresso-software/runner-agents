@@ -132,6 +132,8 @@ jobs:
   promote:
     needs: 
       - versioning
+      - arm64-build
+      - x64-build
       - deploy
     runs-on:
       - self-hosted
