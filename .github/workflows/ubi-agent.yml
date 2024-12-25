@@ -163,8 +163,9 @@ jobs:
           x64_tag: ${{ needs.versioning.outputs.x64_tag }}
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
-  #TODO: cleanup
   cleanup:
+    needs:
+      - deploy
     runs-on:
       - self-hosted
       - ansible
