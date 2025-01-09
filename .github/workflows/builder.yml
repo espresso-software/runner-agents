@@ -23,6 +23,7 @@ on:
     paths:
       - builder/**
       - deploy.yml
+      - docker.yml
       - .github/workflows/builder.yml
       - roles/deploy/**
   schedule:
