@@ -61,7 +61,7 @@ spec:
                 name: gh-healthcheck-token
                 key: TOKEN
           - name: GH_ACTIONS_LABELS
-            value: uat
+            value: {{ labels | default('docker') }}
           - name: GH_ACTIONS_URL
             value: https://github.com/espresso-software
         readinessProbe:

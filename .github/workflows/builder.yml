@@ -23,6 +23,7 @@ on:
     paths:
       - builder/**
       - deploy.yml
+      - docker.yml
       - .github/workflows/builder.yml
       - roles/deploy/**
   schedule:
@@ -111,14 +112,21 @@ jobs:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
-      - name: Deploy uat
+      - name: Install docker
+        uses: espresso-software/actions/ansible/run-playbook@main
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
+          playbook_path: docker.yml
+          inventory_path: inventory/hosts.ini
+      - name: Deploy x64 image
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=amd64
+          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=amd64 labels=uat
 
   promote: 
     needs: 
@@ -209,13 +217,12 @@ jobs:
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=arm64-${{ env.STATEFUL_SET_NAME }} arch=arm64 replicas=2 ${{ env.COMMON_ARGS }}
+          vars: stateful_set_name=arm64-${{ env.STATEFUL_SET_NAME }} arch=arm64 replicas=2 ${{ env.COMMON_ARGS }} 
       - name: x64 deploy
-        #FIXME: This should have 2 replicas, need to provision VM and setup
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=x64-${{ env.STATEFUL_SET_NAME }} arch=amd64 replicas=1 ${{ env.COMMON_ARGS }}
+          vars: stateful_set_name=x64-${{ env.STATEFUL_SET_NAME }} arch=amd64 replicas=2 ${{ env.COMMON_ARGS }}

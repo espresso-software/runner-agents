@@ -1,0 +1,39 @@
+- name: Add Docker GPG Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker APT Repository
+  apt_repository:
+    repo: deb [arch={{ 'arm64' if 'pi' in ansible_hostname else 'amd64' }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install Docker
+  apt:
+    name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose-plugin
+      - python3-pip
+    state: latest
+
+- name: Ensure Docker is enabled
+  ansible.builtin.systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: Set docker group id
+  ansible.builtin.command:
+    cmd: groupmod -g {{ docker.gid }} docker
+
+- name: Set permissions on docker socket
+  ansible.builtin.file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
