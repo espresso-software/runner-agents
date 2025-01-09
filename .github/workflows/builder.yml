@@ -111,7 +111,13 @@ jobs:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
-      - name: Deploy uat
+      - name: Install docker
+        uses: espresso-software/actions/ansible/run-playbook@main
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+        with:
+          playbook_path: docker.yml
+          inventory_path: inventory/hosts.ini
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
