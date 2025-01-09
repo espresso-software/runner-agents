@@ -119,6 +119,7 @@ jobs:
         with:
           playbook_path: docker.yml
           inventory_path: inventory/hosts.ini
+      - name: Deploy x64 image
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
