@@ -6,7 +6,9 @@ metadata:
   name: default-deny-{{ namespace }}
   namespace: {{ namespace }}
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app: {{ stateful_set_name }}
   policyTypes:
     - Ingress
     - Egress
@@ -18,7 +20,9 @@ metadata:
   name: default-allow-dns
   namespace: {{ namespace }}
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app: {{ stateful_set_name }}
   policyTypes:
     - Egress
   egress:
@@ -47,6 +51,7 @@ metadata:
   name: default-allow-{{ namespace }}
   namespace: {{ namespace }}
 spec:
+  podSelector: {}
   policyTypes:
     - Ingress
     - Egress
