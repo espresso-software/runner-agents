@@ -78,9 +78,6 @@ jobs:
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
   
   x64-build:
-    # comment this line to debug the entire pipeline
-    if: github.event.pull_request || github.event_name == 'schedule'
-    # TODO: add second x64 worker and run both builds for all feature lanes
     needs:
       - versioning
     runs-on:
@@ -106,6 +103,8 @@ jobs:
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
 
   deploy:
+    # comment this line to debug the entire pipeline
+    # if: github.event.pull_request || github.event_name == 'schedule'
     needs: 
       - versioning
       - arm64-build
@@ -134,6 +133,7 @@ jobs:
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT arch=arm64 labels=uat
   
   promote:
+    if: github.event.pull_request || github.event_name == 'schedule'
     needs: 
       - versioning
       - arm64-build
@@ -179,6 +179,7 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
   cleanup:
+    if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - deploy
     runs-on:
