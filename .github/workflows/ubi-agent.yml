@@ -16,8 +16,8 @@ on:
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
       # Uncomment below for deployment feature development
-      # - roles/deploy/**
-      # - deploy.yml
+      - roles/deploy/**
+      - deploy.yml
   pull_request:
     branches:
       - main
