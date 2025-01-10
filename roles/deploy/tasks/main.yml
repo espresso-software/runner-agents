@@ -12,6 +12,16 @@
     state: directory
   register: tempfile
 
+- name: Create Network Policy
+  template:
+    src: netpol.yml.j2
+    dest: "{{ tempfile.path }}/netpol.yml"
+
+- name: Apply Network Policy
+  kubernetes.core.k8s:
+    apply: yes
+    src: "{{ tempfile.path }}/netpol.yml"
+
 - name: Create Temporary File for Deployment
   template:
     src: deploy.yml.j2
