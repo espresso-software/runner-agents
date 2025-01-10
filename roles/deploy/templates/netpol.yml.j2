@@ -23,17 +23,18 @@ spec:
     - Egress
   egress:
     - to:
-        - ports:
-            - protocol: UDP
-              port: 53
-            - protocol: TCP
-              port: 53
-          ipBlock:
+        - ipBlock:
             cidr:
               - 1.1.1.1/32
               - 1.0.0.1/32
               - {{ network.dns1 }}/32
               - {{ network.dns2 }}/32
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+          
     - to:
         - podSelector:
             matchLabels:
@@ -75,8 +76,8 @@ spec:
     - Egress
   egress:
     - to:
-      ipBlock:
-        cidr: {{ network.proxy | split(':') | first }}/32
+        - ipBlock:
+            cidr: {{ network.proxy | split(':') | first }}/32
       ports:
         - protocol: TCP
           port: {{ network.proxy | split(':') | last }}
