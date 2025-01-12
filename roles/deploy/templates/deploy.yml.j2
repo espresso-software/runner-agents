@@ -50,6 +50,16 @@ spec:
           - name: workdir
             mountPath: /usr/mware/agent/_work
         env:
+          - name: HTTP_PROXY
+            value: http://{{ network.proxy }}
+          - name: HTTPS_PROXY
+            value: http://{{ network.proxy }}
+          - name: NO_PROXY
+            value: localhost,cluster.local
+          - name: FTP_PROXY
+            value: ftp://{{ network.proxy }}
+          - name: PROXY
+            value: http://{{ network.proxy }}
           - name: TOKEN
             valueFrom:
               secretKeyRef:

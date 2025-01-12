@@ -1,0 +1,77 @@
+---
+#TODO: set at namespace creation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-{{ namespace }}
+  namespace: {{ namespace }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+#TODO: set at namespace creation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-allow-dns
+  namespace: {{ namespace }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+          
+    - to:
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+---
+#TODO: set at namespace creation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-allow-{{ namespace }}
+  namespace: {{ namespace }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ namespace }}
+            podSelector: {}
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ namespace }}
+            podSelector: {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-{{ namespace }}-{{ stateful_set_name }}
+  namespace: {{ namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ stateful_set_name }}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: {{ network.proxy | split(':') | first }}/32
+      ports:
+        - protocol: TCP
+          port: {{ network.proxy | split(':') | last }}
