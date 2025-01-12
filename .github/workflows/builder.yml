@@ -128,7 +128,8 @@ jobs:
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=amd64 labels=uat
 
-  promote: 
+  promote:
+    if: github.event.pull_request || github.event_name == 'schedule'
     needs: 
       - versioning
       - x64-build
