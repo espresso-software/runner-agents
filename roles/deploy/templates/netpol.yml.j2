@@ -22,16 +22,7 @@ spec:
   policyTypes:
     - Egress
   egress:
-    - to:
-        - ipBlock:
-            cidr: 1.1.1.1/32
-        - ipBlock:
-            cidr: 1.0.0.1/32
-        - ipBlock:
-            cidr: {{ network.dns1 }}/32
-        - ipBlock:
-            cidr: {{ network.dns2 }}/32
-      ports:
+    - ports:
         - protocol: UDP
           port: 53
         - protocol: TCP
