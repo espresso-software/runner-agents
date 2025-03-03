@@ -6,6 +6,8 @@
       kind: Namespace
       metadata:
         name: "{{ namespace }}"
+        labels:
+          pod-security.kubernetes.io/warn: restricted
 
 - name: Create Temporary Directory
   tempfile:

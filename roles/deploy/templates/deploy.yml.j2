@@ -6,6 +6,7 @@ metadata:
   namespace: {{ namespace }}
   labels:
     app: {{ stateful_set_name }}
+    agent: github-actions
 spec:
   serviceName: {{ stateful_set_name }}
   replicas: {{ replicas | default(1) }}

@@ -1,77 +1,49 @@
 ---
-#TODO: set at namespace creation
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-{{ namespace }}
-  namespace: {{ namespace }}
-spec:
-  podSelector: {}
-  policyTypes:
-    - Ingress
-    - Egress
----
-#TODO: set at namespace creation
-apiVersion: networking.k8s.io/v1
+# TODO: move to cluster creation
+apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
   name: default-allow-dns
   namespace: {{ namespace }}
 spec:
-  podSelector: {}
-  policyTypes:
+  types:
     - Egress
   egress:
-    - ports:
-        - protocol: UDP
-          port: 53
-        - protocol: TCP
-          port: 53
-          
-    - to:
-        - podSelector:
-            matchLabels:
-              k8s-app: kube-dns
+    - action: Allow
+      protocol: UDP
+      destination:
+        ports:
+          - 53
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 53
+    - action: Allow
+      protocol: UDP
+      destination:
+        selector: k8s-app == 'kube-dns'
+    - action: Allow
+      protocol: TCP
+      destination:
+        selector: k8s-app == 'kube-dns'
 ---
-#TODO: set at namespace creation
-apiVersion: networking.k8s.io/v1
+apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
-  name: default-allow-{{ namespace }}
+  name: agent-allow
   namespace: {{ namespace }}
 spec:
-  podSelector: {}
-  policyTypes:
+  selector: agent == 'github-actions'
+  types:
     - Ingress
     - Egress
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ namespace }}
-            podSelector: {}
   egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ namespace }}
-            podSelector: {}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: allow-{{ namespace }}-{{ stateful_set_name }}
-  namespace: {{ namespace }}
-spec:
-  podSelector:
-    matchLabels:
-      app: {{ stateful_set_name }}
-  policyTypes:
-    - Egress
-  egress:
-    - to:
-        - ipBlock:
-            cidr: {{ network.proxy | split(':') | first }}/32
-      ports:
-        - protocol: TCP
-          port: {{ network.proxy | split(':') | last }}
+    - action: Allow
+      protocol: TCP
+      destination:
+        ports:
+          - 3128
+        nets:
+          - {{ network.proxy }}
