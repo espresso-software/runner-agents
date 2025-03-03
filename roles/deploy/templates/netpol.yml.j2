@@ -19,14 +19,6 @@ spec:
       destination:
         ports:
           - 53
-    - action: Allow
-      protocol: UDP
-      destination:
-        selector: k8s-app == 'kube-dns'
-    - action: Allow
-      protocol: TCP
-      destination:
-        selector: k8s-app == 'kube-dns'
 ---
 apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
