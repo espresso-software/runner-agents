@@ -30,13 +30,11 @@ jobs:
       x64_tag: x64-builder-latest
       arm64_tag: arm64-builder-latest
       common_tag: builder-latest
-    
     steps:
-      - uses: actions/checkout@v2
-      - uses: espresso-software/actions/common/versioning@main
-        id: get_version
-        with:
-          version_file: builder/version.json
+      - shell: bash
+        run: |
+          echo "Common tag: ${{ env.TAG }}"
+          echo "x64 tag: x-64-${{ env.TAG }}"
 
   uat-deploy:
     needs: 
