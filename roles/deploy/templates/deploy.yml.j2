@@ -19,6 +19,7 @@ spec:
     metadata:
       labels:
         app: {{ stateful_set_name }}
+        agent: github-actions
     spec:
       nodeSelector:
         kubernetes.io/role: worker
@@ -32,8 +33,7 @@ spec:
                     operator: In
                     values:
                       - {{ stateful_set_name }}
-              topologyKey: kubernetes.io/hostname
-              whenUnsatisfiable: DoNotSchedule
+              topologyKey: "kubernetes.io/hostname"
       containers:
       - name: agent
         image: coffee206/github-actions:{{ tag }}
