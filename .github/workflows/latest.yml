@@ -36,6 +36,7 @@ jobs:
         run: |
           echo "Common tag: ${{ env.TAG }}"
           echo "x64 tag: x-64-${{ env.TAG }}"
+          echo "arm64 tag: arm64-${{ env.TAG }}"
 
   uat-deploy:
     needs: 
@@ -57,13 +58,13 @@ jobs:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
-      - name: Install docker
-        uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: docker.yml
-          inventory_path: inventory/hosts.ini
+      # - name: Install docker
+      #   uses: espresso-software/actions/ansible/run-playbook@main
+      #   env:
+      #     VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+      #   with:
+      #     playbook_path: docker.yml
+      #     inventory_path: inventory/hosts.ini
       - name: Deploy x64 image
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
