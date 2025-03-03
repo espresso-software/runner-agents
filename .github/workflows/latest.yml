@@ -25,7 +25,7 @@ jobs:
   versioning:
     runs-on:
       - self-hosted
-      - docker
+      - ansible
     outputs:
       x64_tag: x64-builder-latest
       arm64_tag: arm64-builder-latest
