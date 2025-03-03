@@ -38,4 +38,4 @@ spec:
         ports:
           - 3128
         nets:
-          - {{ network.proxy | split(':')[0] | first }}/32
+          - {{ network.proxy | split(':') | first }}/32
