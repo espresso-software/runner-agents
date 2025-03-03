@@ -20,6 +20,7 @@ env:
   DOCKER_REPOSITORY: coffee206/github-actions
   BUILD_DIR: builder
   STATEFUL_SET_NAME: builder
+  TAG: builder-latest
 
 jobs:
   versioning:
@@ -27,9 +28,9 @@ jobs:
       - self-hosted
       - ansible
     outputs:
-      x64_tag: x64-builder-latest
-      arm64_tag: arm64-builder-latest
-      common_tag: builder-latest
+      x64_tag: x64-${{ env.TAG }}
+      arm64_tag: arm64-${{ env.TAG }}
+      common_tag: ${{ env.TAG }}
     steps:
       - shell: bash
         run: |
