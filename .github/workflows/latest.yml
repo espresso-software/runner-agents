@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Builder Image
+name: Deploy Latest
 permissions:
   contents: read
   pull-requests: read
@@ -12,22 +12,9 @@ on:
     branches-ignore:
       - main
     paths:
-      - builder/**
-      - .github/workflows/builder.yml
-      # Uncomment below for deployment feature development
-      # - roles/deploy/**
-      # - deploy.yml
-  pull_request:
-    branches:
-      - main
-    paths:
-      - builder/**
-      - deploy.yml
-      - docker.yml
-      - .github/workflows/builder.yml
+      - .github/workflows/latest.yml
       - roles/deploy/**
-  schedule:
-    - cron: '0 12 * * 6'
+      - deploy.yml
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
@@ -40,9 +27,9 @@ jobs:
       - self-hosted
       - docker
     outputs:
-      x64_tag: x64-builder-${{ env.IMAGE_VERSION }}
-      arm64_tag: arm64-builder-${{ env.IMAGE_VERSION }}
-      common_tag: builder-${{ env.IMAGE_VERSION }}
+      x64_tag: x64-builder-latest
+      arm64_tag: arm64-builder-latest
+      common_tag: builder-latest
     
     steps:
       - uses: actions/checkout@v2
@@ -50,51 +37,10 @@ jobs:
         id: get_version
         with:
           version_file: builder/version.json
-  
-  arm64-build:
-    needs:
-      - versioning
-    runs-on:
-      - self-hosted
-      - docker
-      - ARM64 
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Build and publish image
-        uses: espresso-software/actions/docker/build-and-push@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
-          build_dir: ${{ env.BUILD_DIR }}
-        env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-  
-  x64-build:   
-    needs:
-      - versioning
-    runs-on:
-      - self-hosted
-      - docker
-      - x64   
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build and publish image
-        uses: espresso-software/actions/docker/build-and-push@feature/docker-actions
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
-          build_dir: ${{ env.BUILD_DIR }}
-        env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
 
   uat-deploy:
-    if: github.event.pull_request || github.event_name == 'schedule'
     needs: 
       - versioning
-      - x64-build
     runs-on:
       - self-hosted
       - ansible
@@ -127,50 +73,6 @@ jobs:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=amd64 labels=uat
-
-  promote:
-    if: github.event.pull_request || github.event_name == 'schedule'
-    needs: 
-      - versioning
-      - x64-build
-      - arm64-build
-      - uat-deploy
-    runs-on:
-      - self-hosted
-      - docker
-    env:
-      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-    steps:
-      - name: Promote x64 image
-        uses: espresso-software/actions/docker/promote@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
-          promote_tag: ${{ needs.versioning.outputs.x64_tag }}
-      
-      - name: Promote arm64 image
-        uses: espresso-software/actions/docker/promote@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
-          promote_tag: ${{ needs.versioning.outputs.arm64_tag }}
-      
-      - name: Create release manifest
-        uses: espresso-software/actions/docker/common-tag@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: ${{ needs.versioning.outputs.common_tag }}
-          x64_tag: ${{ needs.versioning.outputs.x64_tag }}
-          arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
-      
-      - name: Create latest manifest
-        uses: espresso-software/actions/docker/common-tag@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: latest
-          x64_tag: ${{ needs.versioning.outputs.x64_tag }}
-          arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
   
   uat-cleanup:
     needs:
@@ -192,12 +94,8 @@ jobs:
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
 
   deploy:
-    if: github.event.pull_request || github.event_name == 'schedule'
     needs: 
       - versioning
-      - promote
-      - x64-build
-      - arm64-build
       - uat-deploy
     runs-on:
       - self-hosted
