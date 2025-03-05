@@ -9,8 +9,8 @@ permissions:
 # Controls when the workflow will run
 on:
   push:
-    branches-ignore:
-      - main
+    branches:
+      - hotfix/**
     paths:
       - .github/workflows/latest.yml
       - roles/deploy/**
