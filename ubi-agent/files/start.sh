@@ -60,6 +60,7 @@ RUNNER_TOKEN="$(curl -XPOST -fsSL \
 print_header "2. Configuring Github Actions Runner agent..."
 
 ./config.sh --unattended \
+  --disableupdate \
   --url "$GH_ACTIONS_URL" \
   --token "$RUNNER_TOKEN" \
   --work "${WORK:-_work}" \

@@ -9,25 +9,10 @@
         labels:
           pod-security.kubernetes.io/warn: restricted
 
-- name: Create Temporary Directory
-  tempfile:
-    state: directory
-  register: tempfile
-
-- name: Create Network Policy
-  template:
-    src: netpol.yml.j2
-    dest: "{{ tempfile.path }}/netpol.yml"
-
 - name: Apply Network Policy
   kubernetes.core.k8s:
     apply: yes
-    src: "{{ tempfile.path }}/netpol.yml"
-
-- name: Create Temporary File for Deployment
-  template:
-    src: deploy.yml.j2
-    dest: "{{ tempfile.path }}/k8s.yml"
+    template: "netpol.yml.j2"
 
 - name: Create Build Token Secret
   no_log: yes
@@ -64,7 +49,7 @@
 - name: Deploy Agent
   kubernetes.core.k8s:
     apply: yes
-    src: "{{ tempfile.path }}/k8s.yml"
+    template: "deploy.yml.j2"
 
 - name: Wait for Deployment to be Ready
   kubernetes.core.k8s_info:

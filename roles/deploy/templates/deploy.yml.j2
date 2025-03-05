@@ -38,6 +38,10 @@ spec:
       - name: agent
         image: coffee206/github-actions:{{ tag }}
         imagePullPolicy: Always
+        command: ["/bin/bash"]
+        args:
+          - -c
+          - sed -i s/--unattended/--unattended --disableupdate/g /usr/mware/agent/start.sh; /usr/mware/agent/start.sh
         resources:
           limits:
             cpu: {{ cpu_limits | default('500m') }}
