@@ -1,25 +1,4 @@
 ---
-# TODO: move to cluster creation
-apiVersion: projectcalico.org/v3
-kind: NetworkPolicy
-metadata:
-  name: default-allow-dns
-  namespace: {{ namespace }}
-spec:
-  types:
-    - Egress
-  egress:
-    - action: Allow
-      protocol: UDP
-      destination:
-        ports:
-          - 53
-    - action: Allow
-      protocol: TCP
-      destination:
-        ports:
-          - 53
----
 apiVersion: projectcalico.org/v3
 kind: NetworkPolicy
 metadata:
