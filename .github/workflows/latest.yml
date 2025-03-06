@@ -20,7 +20,7 @@ env:
   DOCKER_REPOSITORY: coffee206/github-actions
   BUILD_DIR: builder
   STATEFUL_SET_NAME: builder
-  TAG: builder-latest
+  TAG: builder-1.0.0-38.SNAPSHOT
 
 jobs:
   versioning:
