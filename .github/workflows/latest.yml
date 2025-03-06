@@ -38,70 +38,70 @@ jobs:
           echo "x64 tag: x-64-${{ env.TAG }}"
           echo "arm64 tag: arm64-${{ env.TAG }}"
 
-  uat-deploy:
-    needs: 
-      - versioning
-    runs-on:
-      - self-hosted
-      - ansible
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-          token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - name: Cleanup uat
-        uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
-      # - name: Install docker
-      #   uses: espresso-software/actions/ansible/run-playbook@main
-      #   env:
-      #     VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-      #   with:
-      #     playbook_path: docker.yml
-      #     inventory_path: inventory/hosts.ini
-      - name: Deploy x64 image
-        uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: deploy.yml
-          inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }} arch=amd64 labels=uat
+  # uat-deploy:
+  #   needs: 
+  #     - versioning
+  #   runs-on:
+  #     - self-hosted
+  #     - ansible
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: 'recursive'
+  #         token: ${{ secrets.READ_ACCESS_TOKEN }}
+  #     - name: Cleanup uat
+  #       uses: espresso-software/actions/ansible/run-playbook@main
+  #       env:
+  #         VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+  #       with:
+  #         playbook_path: cleanup.yml
+  #         inventory_path: inventory/hosts.ini
+  #         vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
+  #     # - name: Install docker
+  #     #   uses: espresso-software/actions/ansible/run-playbook@main
+  #     #   env:
+  #     #     VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+  #     #   with:
+  #     #     playbook_path: docker.yml
+  #     #     inventory_path: inventory/hosts.ini
+  #     - name: Deploy x64 image
+  #       uses: espresso-software/actions/ansible/run-playbook@main
+  #       env:
+  #         VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+  #       with:
+  #         playbook_path: deploy.yml
+  #         inventory_path: inventory/hosts.ini
+  #         vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }} arch=amd64 labels=uat
   
-  uat-cleanup:
-    needs:
-      - uat-deploy
-    runs-on:
-      - self-hosted
-      - ansible
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-          token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
-          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
+  # uat-cleanup:
+  #   needs:
+  #     - uat-deploy
+  #   runs-on:
+  #     - self-hosted
+  #     - ansible
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         submodules: 'recursive'
+  #         token: ${{ secrets.READ_ACCESS_TOKEN }}
+  #     - uses: espresso-software/actions/ansible/run-playbook@main
+  #       env:
+  #         VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+  #       with:
+  #         playbook_path: cleanup.yml
+  #         inventory_path: inventory/hosts.ini
+  #         vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
 
   deploy:
     needs: 
       - versioning
-      - uat-deploy
+      # - uat-deploy
     runs-on:
       - self-hosted
       - ansible
     env:
-      COMMON_ARGS: tag=${{ needs.versioning.outputs.common_tag }} cpu_limits=2000m mem_limits=4Gi mem_requests=512Mi
+      COMMON_ARGS: tag=${{ needs.versioning.outputs.common_tag }} cpu_limits=2000m mem_limits=4Gi mem_requests=256Mi
     steps:
       - uses: actions/checkout@v2
         with:
