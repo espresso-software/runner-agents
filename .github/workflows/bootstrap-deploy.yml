@@ -60,7 +60,6 @@ jobs:
         needs:
             - base-versioning
             - base-x64-build
-            - deploy
         runs-on:
             - self-hosted
             - swarm
