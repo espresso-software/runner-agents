@@ -6,7 +6,8 @@ LABEL description="GitHub Actions Deployer Runner Ansible Deploy Agent Image"
 ### INSTALL DEPLOY AGENT DEPENDENCIES
 USER root
 RUN yum install -y \
-  ansible \
+  ansible-core \
+  python3 \
   python3-pip \
   sshpass; \
   yum clean all;
