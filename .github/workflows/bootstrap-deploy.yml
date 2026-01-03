@@ -86,7 +86,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.deploy-versioning.outputs.x64_tag }}.BOOTSTRAP
           build_dir: deploy
-          build_args: TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
+          build_args: --build-arg TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
