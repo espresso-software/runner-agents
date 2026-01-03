@@ -1,4 +1,4 @@
-FROM redhat/ubi8-minimal AS unpack
+FROM redhat/ubi9-minimal AS unpack
 
 ### UNPACK AGENT FILES
 # Unpack as root to avoid using USER statements to switch back and forth
@@ -10,7 +10,7 @@ RUN microdnf install -y tar gzip; \
   rm -f /tmp/agent/${agent_file}; \
   chmod 500 /tmp/agent/config.sh;
 
-FROM redhat/ubi8-minimal:8.10 AS agent
+FROM redhat/ubi9-minimal:9.7 AS agent
 LABEL maintainer="Ty Foster"
 LABEL description="GitHub Actions Runner base image"
 
