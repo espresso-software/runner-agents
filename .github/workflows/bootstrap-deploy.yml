@@ -1,0 +1,147 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Swarm Deploy Agent Bootstrap
+permissions:
+    contents: read
+    pull-requests: read
+    issues: write
+
+# Controls when the workflow will run
+on:
+    workflow_dispatch:
+
+env:
+    DOCKER_REPOSITORY: coffee206/github-actions
+    GITHUB_ACTIONS_VERSION: "2.330.0"
+    BUILD_DIR: ubi-agent
+    STATEFUL_SET_NAME: ubi-agent
+
+jobs:
+    base-versioning:
+        runs-on:
+            - self-hosted
+            - swarm
+        outputs:
+            x64_tag: x64-${{ env.IMAGE_VERSION }}
+            arm64_tag: arm64-${{ env.IMAGE_VERSION }}
+            common_tag: ${{ env.IMAGE_VERSION }}
+
+        steps:
+            - uses: actions/checkout@v2
+            - uses: espresso-software/actions/common/versioning@main
+              id: get_version
+              with:
+                  version_file: ubi-agent/version.json
+
+    base-x64-build:
+        needs:
+            - base-versioning
+        runs-on:
+            - self-hosted
+            - swarm
+            - x64
+        env:
+            TARGETARCH: linux-x64
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Build and publish image
+              uses: ./.github/actions/ubi-agent-build
+              env:
+                  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+                  DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+              with:
+                  actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+                  targetarch: ${{ env.TARGETARCH }}
+                  build_directory: ${{ env.BUILD_DIR }}
+                  tag: ${{ needs.base-versioning.outputs.x64_tag }}.SNAPSHOT
+
+    base-promote:
+        needs:
+            - base-versioning
+            - base-x64-build
+        runs-on:
+            - self-hosted
+            - swarm
+        env:
+            DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+            DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+        steps:
+            - name: Promote x64 image
+              uses: espresso-software/actions/docker/promote@main
+              with:
+                  repository: ${{ env.DOCKER_REPOSITORY }}
+                  old_tag: ${{ needs.base-versioning.outputs.x64_tag }}.SNAPSHOT
+                  promote_tag: ${{ needs.base-versioning.outputs.x64_tag }}
+                  skip_cleanup: "true"
+
+            - name: Create release manifest
+              uses: espresso-software/actions/docker/common-tag@main
+              with:
+                  repository: ${{ env.DOCKER_REPOSITORY }}
+                  tag: ${{ needs.base-versioning.outputs.common_tag }}
+                  x64_tag: ${{ needs.base-versioning.outputs.x64_tag }}
+                  arm64_tag: ${{ needs.base-versioning.outputs.arm64_tag }}
+
+            - name: Create latest manifest
+              uses: espresso-software/actions/docker/common-tag@main
+              with:
+                  repository: ${{ env.DOCKER_REPOSITORY }}
+                  tag: latest
+                  x64_tag: ${{ needs.base-versioning.outputs.x64_tag }}
+                  arm64_tag: ${{ needs.base-versioning.outputs.arm64_tag }}
+
+    deploy-versioning:
+        runs-on:
+            - self-hosted
+            - swarm
+        steps:
+            - uses: actions/checkout@v2
+            - uses: espresso-software/actions/common/versioning@main
+              id: get_version
+              with:
+                  version_file: deploy/version.json
+
+    deploy-x64-build:
+        needs:
+            - deploy-versioning
+        runs-on:
+            - self-hosted
+            - swarm
+            - x64
+        env:
+            TARGETARCH: linux-x64
+        steps:
+            - uses: actions/checkout@v2
+
+            - name: Build and publish image
+              uses: ./.github/actions/deploy-build
+              env:
+                  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+                  DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+              with:
+                  actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+                  targetarch: ${{ env.TARGETARCH }}
+                  build_directory: deploy
+                  tag: ${{ needs.deploy-versioning.outputs.x64_tag }}.SNAPSHOT
+    
+    deploy-promote:
+        needs:
+            - deploy-versioning
+            - deploy-x64-build
+        runs-on:
+            - self-hosted
+            - swarm
+        env:
+            DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+            DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+        steps:
+            - name: Promote x64 image
+              uses: espresso-software/actions/docker/promote@main
+              with:
+                  repository: ${{ env.DOCKER_REPOSITORY }}
+                  old_tag: ${{ needs.deploy-versioning.outputs.x64_tag }}.SNAPSHOT
+                  promote_tag: ${{ needs.deploy-versioning.outputs.x64_tag }}
+                  skip_cleanup: "true"
+
+    # TODO: Deploy to Swarm cluster

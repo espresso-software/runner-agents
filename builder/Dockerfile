@@ -1,4 +1,6 @@
 FROM coffee206/github-actions:latest
+LABEL maintainer="Ty Foster"
+LABEL description="GitHub Actions UBI Runner Build Agent Image"
 
 # INSTALL BUILD AGENT DEPENDENCIES
 USER root
