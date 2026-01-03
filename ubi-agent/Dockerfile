@@ -21,7 +21,7 @@ ENV NO_PROXY="127.0.0.1,10.0.0.0/8"
 
 ### INSTALL DEPENDENCIES
 RUN ln -sf /usr/bin/microdnf /usr/bin/yum; \
-  yum clean all; \
+  yum update -y; \
   yum install -y \
   git \
   gzip \
