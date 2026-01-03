@@ -16,7 +16,6 @@ LABEL description="GitHub Actions Runner base image"
 
 ### INSTALL DEPENDENCIES
 RUN ln -sf /usr/bin/microdnf /usr/bin/yum; \
-  yum update -y; \
   yum install -y \
   git \
   gzip \
