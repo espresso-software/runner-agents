@@ -3,7 +3,7 @@ FROM coffee206/github-actions:${TAG}
 LABEL maintainer="Ty Foster"
 LABEL description="GitHub Actions Deployer Runner Ansible Deploy Agent Image"
 
-### INSTALL BUILD AGENT DEPENDENCIES
+### INSTALL DEPLOY AGENT DEPENDENCIES
 USER root
 RUN yum install -y \
   ansible \
@@ -15,5 +15,5 @@ RUN yum install -y \
 USER agent
 
 ### Make SSH directory
-RUN mkdir -p /home/mware/agent/.ssh && \
-  chmod 700 /home/mware/agent/.ssh
+RUN mkdir -p /usr/mware/agent/.ssh && \
+  chmod 640 /usr/mware/agent/.ssh
