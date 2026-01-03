@@ -13,6 +13,7 @@ ubi-agent/files/*.tar.gz
 *.userosscache
 *.sln.docstates
 .vscode/
+.ansible/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
