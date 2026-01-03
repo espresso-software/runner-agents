@@ -6,7 +6,6 @@ LABEL description="GitHub Actions Deployer Runner Ansible Deploy Agent Image"
 ### INSTALL DEPLOY AGENT DEPENDENCIES
 USER root
 RUN yum install -y \
-  ansible-core \
   python3 \
   python3-pip \
   sshpass; \
@@ -14,6 +13,8 @@ RUN yum install -y \
 
 ### SWAP TO AGENT USER
 USER agent
+
+RUN pip3 install --user ansible-core
 
 ### Make SSH directory
 RUN mkdir -p /usr/mware/agent/.ssh && \
