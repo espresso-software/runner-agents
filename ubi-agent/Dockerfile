@@ -14,6 +14,10 @@ FROM redhat/ubi8-minimal:8.10 AS agent
 LABEL maintainer="Ty Foster"
 LABEL description="GitHub Actions Runner base image"
 
+# SET PROXY ENVIRONMENT VARIABLES
+ENV HTTP_PROXY="http://10.25.206.0:80"
+ENV HTTPS_PROXY="http://10.25.206.0:80"
+ENV NO_PROXY="127.0.0.1,10.0.0.0/8"
 
 ### INSTALL DEPENDENCIES
 RUN ln -sf /usr/bin/microdnf /usr/bin/yum; \
