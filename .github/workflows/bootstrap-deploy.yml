@@ -13,8 +13,6 @@ on:
 env:
     DOCKER_REPOSITORY: coffee206/github-actions
     GITHUB_ACTIONS_VERSION: "2.330.0"
-    BUILD_DIR: ubi-agent
-    STATEFUL_SET_NAME: ubi-agent
 
 jobs:
     base-versioning:
@@ -53,7 +51,7 @@ jobs:
               with:
                   actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
                   targetarch: ${{ env.TARGETARCH }}
-                  build_directory: ${{ env.BUILD_DIR }}
+                  build_directory: ubi-agent
                   tag: ${{ needs.base-versioning.outputs.x64_tag }}.SNAPSHOT
 
     base-promote:
@@ -105,25 +103,26 @@ jobs:
     deploy-x64-build:
         needs:
             - deploy-versioning
+            - base-promote
         runs-on:
             - self-hosted
             - swarm
             - x64
         env:
             TARGETARCH: linux-x64
+            BUILD_DIR: deploy
         steps:
             - uses: actions/checkout@v2
 
             - name: Build and publish image
-              uses: ./.github/actions/deploy-build
-              env:
-                  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-                  DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+              uses: espresso-software/actions/docker/build-and-push@main
               with:
-                  actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
-                  targetarch: ${{ env.TARGETARCH }}
-                  build_directory: deploy
-                  tag: ${{ needs.deploy-versioning.outputs.x64_tag }}.SNAPSHOT
+                repository: ${{ env.DOCKER_REPOSITORY }}
+                tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+                build_dir: deploy
+              env:
+                DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+                DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
     
     deploy-promote:
         needs:
