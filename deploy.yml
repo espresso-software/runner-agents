@@ -5,5 +5,6 @@
   become: true
   environment:
     KUBECONFIG: "{{ kube_config_path }}"
+    K8S_AUTH_NO_PROXY: "{{ no_proxy }}"
   roles:
     - agent
