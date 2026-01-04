@@ -109,6 +109,8 @@ jobs:
 
       - name: Ansible Playbook Deploy
         uses: espresso-software/actions/ansible/run-playbook@main
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/restricted.yml
