@@ -23,7 +23,7 @@ jobs:
   base-versioning:
     runs-on:
       - self-hosted
-      - swarm
+      - deploy-ansible
     outputs:
       x64_tag: x64-${{ env.IMAGE_VERSION }}
 
