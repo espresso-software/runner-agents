@@ -11,7 +11,7 @@
   when: agent_can_ssh | default(false)
   kubernetes.core.k8s:
     definition:
-      apiVersion: networking.k8s.io/v1
+      apiVersion: cilium.io/v2
       kind: CiliumNetworkPolicy
       metadata:
         name: allow-agent-ssh
