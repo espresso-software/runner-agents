@@ -33,9 +33,19 @@ spec:
                       - {{ agent_stateful_set_name }}
               topologyKey: kubernetes.io/hostname
               whenUnsatisfiable: DoNotSchedule
+      volumes:
+        - name: workdir
+          emptyDir: {}
+        - name: tempdir
+          emptyDir: {}
+{% for volume in agent_volumes %}
+        - {{ volume | to_json }}
+{% endfor %}
       containers:
         - name: agent
-          readOnlyRootFilesystem: true
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
           image: "coffee206/github-actions:{{ agent_tag }}"
           imagePullPolicy: Always
           resources:
@@ -66,14 +76,6 @@ spec:
                 secretKeyRef:
                   name: gh-healthcheck-token
                   key: TOKEN
-          volumes:
-            - name: workdir
-              emptyDir: {}
-            - namt: tempdir
-              emptyDir: {}
-{% for volume in agent_volumes %}
-            - {{ volume | to_json }}
-{% endfor %}
           volumeMounts:
             - name: workdir
               mountPath: /usr/mware/agent/_work

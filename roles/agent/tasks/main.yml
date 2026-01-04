@@ -34,8 +34,9 @@
               - 10.25.128.0/17 # Proxy Cloud Nodes
               - 10.32.0.0/16 # Cloud Desktops
             toPorts:
-              - port: "22"
-                protocol: TCP
+              - ports:
+                  - port: "22"
+                    protocol: TCP
 
 - name: Create Build Token Secret
   no_log: true
