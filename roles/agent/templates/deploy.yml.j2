@@ -20,7 +20,9 @@ spec:
         app: {{ agent_stateful_set_name }}
     spec:
       nodeSelector:
+{% if agent_has_docker %}
         kubernetes.io/role: worker
+{% endif %}
         kubernetes.io/arch: {{ agent_arch }}
       affinity:
         podAntiAffinity:
