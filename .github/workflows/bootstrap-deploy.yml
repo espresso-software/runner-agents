@@ -105,8 +105,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0
-
+          submodules: "recursive"
+          token: ${{ secrets.READ_ACCESS_TOKEN }}
       - name: Ansible Playbook Deploy
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
