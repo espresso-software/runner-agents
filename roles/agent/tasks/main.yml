@@ -89,11 +89,16 @@
         id_ed25519: "{{ ssh.ansible.key | b64encode }}"
         id_ed25519.pub: "{{ ssh.ansible.cert | b64encode }}"
 
-- name: Deploy Agent
+- name: Update Agent StatefulSet
   kubernetes.core.k8s:
     namespace: "{{ agent_namespace }}"
     apply: true
     template: templates/stateful-set.yml.j2
+
+- name: Rollout Restart StatefulSet
+  changed_when: true
+  ansible.builtin.command: >
+    /usr/local/bin/kubectl -n {{ agent_namespace }} rollout restart statefulset {{ agent_stateful_set_name }}
 
 - name: Wait for Deployment to be Ready
   kubernetes.core.k8s_info:

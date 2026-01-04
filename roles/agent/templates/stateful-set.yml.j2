@@ -44,7 +44,6 @@ spec:
         - name: agent
           securityContext:
             readOnlyRootFilesystem: true
-            runAsNonRoot: true
           image: "coffee206/github-actions:{{ agent_tag }}"
           imagePullPolicy: Always
           resources:
