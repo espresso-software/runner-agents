@@ -12,6 +12,8 @@ spec:
       app: {{ agent_stateful_set_name }}
   updateStrategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 75%
   template:
     metadata:
       labels:
@@ -64,6 +66,10 @@ spec:
               value: "ftp://{{ internet_proxy }}"
             - name: PROXY
               value: "http://{{ internet_proxy }}"
+            - name: GH_ACTIONS_LABELS
+              value: "{{ agent_labels }}"
+            - name: GH_ACTIONS_URL
+              value: "{{ agent_url | default('https://github.com/espresso-software') }}"
             - name: TOKEN
               valueFrom:
                 secretKeyRef:
