@@ -44,8 +44,6 @@ spec:
 {% endfor %}
       containers:
         - name: agent
-          securityContext:
-            readOnlyRootFilesystem: true
           image: "coffee206/github-actions:{{ agent_tag }}"
           imagePullPolicy: Always
           resources:
