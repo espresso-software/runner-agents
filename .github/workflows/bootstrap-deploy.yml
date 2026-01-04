@@ -87,11 +87,29 @@ jobs:
         uses: espresso-software/actions/docker/build-and-push@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: ${{ needs.deploy-versioning.outputs.x64_tag }}.BOOTSTRAP
+          tag: ${{ needs.ansible-versioning.outputs.x64_tag }}.BOOTSTRAP
           build_dir: ${{ env.BUILD_DIR }}
           build_args: --build-arg TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
 
-  # TODO: Deploy to Swarm cluster
+  ansible-deploy:
+    needs:
+      - ansible-build
+    runs-on:
+      - self-hosted
+      - bootstrap
+    env:
+      IMAGE_VERSION: ${{ needs.ansible-versioning.outputs.x64_tag }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Ansible Playbook Deploy
+        uses: espresso-software/actions/ansible/run-playbook@main
+        with:
+          playbook_path: deploy.yml
+          inventory_path: inventory/restricted.yml
+          vars: agent_stateful_set_name=ansible agent_arch=amd64 agent_replicas=3 agent_labels=ansible agent_tag=${{ env.IMAGE_VERSION }} agent_cpu_limits=1000m agent_mem_limits=2Gi agent_mem_requests=256Mi

@@ -1,0 +1,99 @@
+---
+- name: Create Namespace
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ agent_namespace }}"
+
+- name: Apply Network Policy
+  when: agent_can_ssh | default(false)
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: CiliumNetworkPolicy
+      metadata:
+        name: allow-agent-ssh
+        namespace: "{{ agent_namespace }}"
+      spec:
+        endpointSelector:
+          matchExpressions:
+            - key: "io.kubernetes.pod.namespace"
+              operator: "In"
+              values:
+                - "{{ agent_namespace }}"
+        egress:
+          - toCIDR:
+              - 10.3.0.0/16 # Game Cloud Nodes
+              - 10.7.0.0/16 # Build Cloud Nodes
+              - 10.11.0.0/16 # Tools Cloud Nodes
+              - 10.15.0.0/16 # Data Cloud Nodes
+              - 10.16.0.0/14 # NonProd Servers
+              - 10.23.0.0/16 # NonProd Cloud Nodes
+              - 10.25.128.0/17 # Proxy Cloud Nodes
+              - 10.32.0.0/16 # Cloud Desktops
+            toPorts:
+              - port: "22"
+                protocol: TCP
+
+- name: Create Build Token Secret
+  no_log: true
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gh-actions-token
+        namespace: "{{ agent_namespace }}"
+        labels:
+          agent: github-actions
+      type: Opaque
+      data:
+        TOKEN: "{{ agent_token | b64encode }}"
+
+- name: Create Healthcheck Token
+  no_log: true
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gh-healthcheck-token
+        namespace: "{{ agent_namespace }}"
+        labels:
+          agent: github-actions
+      type: Opaque
+      data:
+        TOKEN: "{{ agent_healthcheck_token | b64encode }}"
+
+- name: Create SSH Keys
+  when: agent_can_ssh | default(false)
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gh-actions-ssh-keys
+        namespace: "{{ agent_namespace }}"
+        labels:
+          agent: github-actions
+      type: Opaque
+      data:
+        id_ed25519: "{{ ssh.ansible.key | b64encode }}"
+        id_ed25519.pub: "{{ ssh.ansible.cert | b64encode }}"
+
+- name: Deploy Agent
+  kubernetes.core.k8s:
+    template: deploy.yml.j2
+    namespace: "{{ agent_namespace }}"
+
+- name: Wait for Deployment to be Ready
+  kubernetes.core.k8s_info:
+    kind: StatefulSet
+    name: "{{ agent_stateful_set_name }}"
+    namespace: "{{ agent_namespace }}"
+  register: deployment_info
+  until: deployment_info.resources[0].status.availableReplicas == deployment_info.resources[0].status.replicas
+  retries: 60
+  delay: 10

@@ -6,4 +6,4 @@
   environment:
     KUBECONFIG: "{{ kube_config_path }}"
   roles:
-    - deploy
+    - agent
