@@ -6,15 +6,6 @@ if [ -z "$GH_ACTIONS_URL" ]; then
   exit 1
 fi
 
-if [ -n "$TOKEN_FILE" ]; then
-  if [ -e "$TOKEN_FILE" ]; then
-    TOKEN="$(cat "$TOKEN_FILE")"
-  else
-    echo 1>&2 "error: TOKEN_FILE '$TOKEN_FILE' does not exist"
-    exit 1
-  fi
-else
-
 if [ -z "$TOKEN" ]; then
   echo 1>&2 "error: missing TOKEN environment variable"
   exit 1
@@ -87,3 +78,5 @@ chmod +x ./bin/Runner.Listener
 # To be aware of TERM and INT signals call run.sh
 # Running it with the --once flag at the end will shut down the agent after the build is executed
 ./bin/Runner.Listener run --startuptype service & wait $!
+
+exit 0
