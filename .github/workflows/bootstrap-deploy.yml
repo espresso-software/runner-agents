@@ -118,4 +118,4 @@ jobs:
           playbook_path: deploy.yml
           inventory_path: inventory/restricted.yml
           hosts: ansible-k3s
-          vars: agent_stateful_set_name=ansible agent_arch=amd64 agent_replicas=3 agent_labels=ansible agent_tag=${{ needs.ansible-versioning.outputs.x64_tag }}.BOOTSTRAP agent_cpu_limits=1000m agent_mem_limits=2Gi agent_mem_requests=256Mi
+          vars: agent_stateful_set_name=ansible agent_arch=amd64 agent_replicas=3 agent_labels=ansible agent_tag=${{ needs.ansible-versioning.outputs.x64_tag }}.BOOTSTRAP agent_cpu_limits=500m agent_mem_limits=1Gi agent_mem_requests=256Mi
