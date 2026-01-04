@@ -1,0 +1,37 @@
+---
+- name: Deploy Ansible Agent
+  hosts: ansible-k3s-managers
+  run_once: true
+  become: true
+  environment:
+    KUBECONFIG: "{{ kube_config_path }}"
+    K8S_AUTH_NO_PROXY: "{{ no_proxy }}"
+  vars:
+    agent_can_ssh: true
+    agent_stateful_set_name: ansible
+    agent_arch: amd64
+    agent_replicas: 3
+    agent_labels: ansible
+    agent_node_selectors:
+      kubernetes.io/arch: amd64
+    agent_cpu_limits: 1000m
+    agemt_mem_requests: 256Mi
+    agent_mem_limits: 2Gi
+    agent_volumes:
+      - name: ssh-keys
+        secret:
+          secretName: ansible-agent-ssh-keys
+      - name: workdir
+        emptyDir: {}
+      - name: tmpdir
+        emptyDir: {}
+    agent_volume_mounts:
+      - name: ssh-keys
+        mountPath: /usr/mware/agent/.ssh
+        readOnly: true
+      - name: workdir
+        mountPath: /usr/mware/agent/_work
+      - name: tmpdir
+        mountPath: /tmp
+  roles:
+    - agent
