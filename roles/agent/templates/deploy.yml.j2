@@ -58,15 +58,15 @@ spec:
             mountPath: /usr/mware/agent/_work
         env:
           - name: HTTP_PROXY
-            value: http://{{ network.proxy }}
+            value: http://{{ internet_proxy }}
           - name: HTTPS_PROXY
-            value: http://{{ network.proxy }}
+            value: http://{{ internet_proxy }}
           - name: NO_PROXY
-            value: {{ network.no_proxy }}
+            value: {{ no_proxy }}
           - name: FTP_PROXY
-            value: ftp://{{ network.proxy }}
+            value: ftp://{{ internet_proxy }}
           - name: PROXY
-            value: http://{{ network.proxy }}
+            value: http://{{ internet_proxy }}
           - name: TOKEN
             valueFrom:
               secretKeyRef:
