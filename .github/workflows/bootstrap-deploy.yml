@@ -115,7 +115,7 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: deploy.yml
+          playbook_path: ansible-agent.yml
           inventory_path: inventory/restricted.yml
           hosts: ansible-k3s
           vars: agent_tag=${{ needs.ansible-versioning.outputs.x64_tag }}.BOOTSTRAP
