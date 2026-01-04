@@ -12,8 +12,7 @@
     agent_arch: amd64
     agent_replicas: 3
     agent_labels: ansible
-    agent_node_selectors:
-      kubernetes.io/arch: amd64
+    agent_node_selectors: {}
     agent_cpu_limits: 1000m
     agemt_mem_requests: 256Mi
     agent_mem_limits: 2Gi
@@ -21,17 +20,9 @@
       - name: ssh-keys
         secret:
           secretName: ansible-agent-ssh-keys
-      - name: workdir
-        emptyDir: {}
-      - name: tmpdir
-        emptyDir: {}
     agent_volume_mounts:
       - name: ssh-keys
         mountPath: /usr/mware/agent/.ssh
         readOnly: true
-      - name: workdir
-        mountPath: /usr/mware/agent/_work
-      - name: tmpdir
-        mountPath: /tmp
   roles:
     - agent
