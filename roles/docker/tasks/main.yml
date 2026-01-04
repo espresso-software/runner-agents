@@ -1,36 +1,108 @@
-- name: Add Docker GPG Key
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
+---
+- name: Create docker group
+  ansible.builtin.group:
+    name: docker
+    gid: "{{ docker.group_id }}"
+    state: present
+    system: true
+
+- name: Add Users to Docker group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  loop: "{{ docker_users | default(['ansible', 'devops']) }}"
+
+- name: Rocky / Fedora - Docker Install
+  when: ansible_distribution in ["Rocky", "Fedora"]
+  block:
+    - name: Rocky - Add Docker repository
+      when: ansible_distribution == "Rocky"
+      block:
+        - name: Install required packages
+          ansible.builtin.dnf:
+            name:
+              - dnf-plugins-core
+            state: present
+        - name: Add Docker repository
+          ansible.builtin.command: >
+            dnf config-manager
+            --add-repo
+            https://download.docker.com/linux/rhel/docker-ce.repo
+          args:
+            creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Fedora - Add Docker repository
+      when: ansible_distribution == "Fedora"
+      block:
+        - name: Add Docker repository
+          ansible.builtin.command: >
+            dnf config-manager
+            addrepo
+            --from-repofile
+            https://download.docker.com/linux/fedora/docker-ce.repo
+          args:
+            creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Install Docker
+      ansible.builtin.dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - python3-pip
+        state: present
+        update_cache: true
+
+- name: Ubuntu - Docker Install
+  when: ansible_distribution == "Ubuntu"
+  block:
+    - name: Add Docker GPG Key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: Add Docker APT Repository
+      when: ansible_distribution == "Ubuntu"
+      ansible.builtin.apt_repository:
+        repo: deb [arch={{ 'arm64' if 'pi' in ansible_hostname else 'amd64' }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+    - name: Install Docker
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - python3-pip
+        state: present
+        update_cache: true
+
+- name: Install Docker Python module
+  ansible.builtin.pip:
+    name: docker
     state: present
 
-- name: Add Docker APT Repository
-  apt_repository:
-    repo: deb [arch={{ 'arm64' if 'pi' in ansible_hostname else 'amd64' }}] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
-    state: present
+- name: Configure Docker Daemon HTTP Proxy
+  ansible.builtin.file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: '0644'
 
-- name: Update apt cache
-  apt:
-    update_cache: yes
-
-- name: Install Docker
-  apt:
-    name: 
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-compose-plugin
-      - python3-pip
-    state: latest
+- name: Set HTTP Proxy for Docker Daemon
+  notify: Restart Docker
+  ansible.builtin.template:
+    src: http-proxy.conf.j2
+    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+    mode: '0644'
 
 - name: Ensure Docker is enabled
   ansible.builtin.systemd:
     name: docker
-    enabled: yes
+    enabled: true
     state: started
-
-- name: Set docker group id
-  ansible.builtin.command:
-    cmd: groupmod -g {{ docker.gid }} docker
 
 - name: Set permissions on docker socket
   ansible.builtin.file:

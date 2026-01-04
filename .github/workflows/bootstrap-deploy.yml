@@ -9,7 +9,12 @@ permissions:
 # Controls when the workflow will run
 on:
   workflow_dispatch:
-
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - ansible/**
+      - .github/workflows/bootstrap-deploy.yml
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
   GITHUB_ACTIONS_VERSION: "2.330.0"
@@ -34,7 +39,7 @@ jobs:
       - base-versioning
     runs-on:
       - self-hosted
-      - swarm
+      - deploy-ansible
       - x64
     env:
       TARGETARCH: linux-x64
@@ -52,31 +57,31 @@ jobs:
           build_directory: ubi-agent
           tag: ${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
 
-  deploy-versioning:
+  ansible-versioning:
     runs-on:
       - self-hosted
-      - swarm
+      - deploy-ansible
     outputs:
-      x64_tag: x64-deploy-${{ env.IMAGE_VERSION }}
+      x64_tag: x64-ansible-${{ env.IMAGE_VERSION }}
     steps:
       - uses: actions/checkout@v2
       - uses: espresso-software/actions/common/versioning@main
         id: get_version
         with:
-          version_file: deploy/version.json
+          version_file: ansible/version.json
 
-  deploy-build:
+  ansible-build:
     needs:
       - base-versioning
       - base-build
-      - deploy-versioning
+      - ansible-versioning
     runs-on:
       - self-hosted
-      - swarm
+      - deploy-ansible
       - x64
     env:
       TARGETARCH: linux-x64
-      BUILD_DIR: deploy
+      BUILD_DIR: ansible
     steps:
       - uses: actions/checkout@v2
 
@@ -85,7 +90,7 @@ jobs:
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.deploy-versioning.outputs.x64_tag }}.BOOTSTRAP
-          build_dir: deploy
+          build_dir: ${{ env.BUILD_DIR }}
           build_args: --build-arg TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}

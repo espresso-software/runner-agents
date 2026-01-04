@@ -10,7 +10,6 @@ permissions:
 on:
   workflow_dispatch:
 
-
 jobs:
   docker-self-heal:
     runs-on:
@@ -20,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{ secrets.READ_ACCESS_TOKEN }}
       - name: Install docker
         uses: espresso-software/actions/ansible/run-playbook@main
@@ -28,4 +27,4 @@ jobs:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: docker.yml
-          inventory_path: inventory/hosts.ini
+          inventory_path: inventory/hosts.yml
