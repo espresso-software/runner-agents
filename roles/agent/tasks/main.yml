@@ -10,6 +10,7 @@
 - name: Apply Network Policy
   when: agent_can_ssh | default(false)
   kubernetes.core.k8s:
+    apply: true
     definition:
       apiVersion: cilium.io/v2
       kind: CiliumNetworkPolicy
@@ -41,6 +42,7 @@
 - name: Create Build Token Secret
   no_log: true
   kubernetes.core.k8s:
+    apply: true
     definition:
       apiVersion: v1
       kind: Secret
@@ -56,6 +58,7 @@
 - name: Create Healthcheck Token
   no_log: true
   kubernetes.core.k8s:
+    apply: true
     definition:
       apiVersion: v1
       kind: Secret
@@ -72,11 +75,12 @@
   when: agent_can_ssh | default(false)
   no_log: true
   kubernetes.core.k8s:
+    apply: true
     definition:
       apiVersion: v1
       kind: Secret
       metadata:
-        name: gh-actions-ssh-keys
+        name: ansible-agent-ssh-keys
         namespace: "{{ agent_namespace }}"
         labels:
           agent: github-actions
@@ -88,6 +92,7 @@
 - name: Deploy Agent
   kubernetes.core.k8s:
     namespace: "{{ agent_namespace }}"
+    apply: true
     template: templates/stateful-set.yml.j2
 
 - name: Wait for Deployment to be Ready
