@@ -73,7 +73,7 @@ spec:
                 secretKeyRef:
                   name: gh-actions-token
                   key: TOKEN
-            - name: HEALTHCHECK_TOKEN
+            - name: GH_ACTIONS_HC_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: gh-healthcheck-token
@@ -90,29 +90,26 @@ spec:
             exec:
               command:
                 - /usr/mware/agent/probe.sh
-                - readiness
             initialDelaySeconds: 15
-            periodSeconds: 30
-            timeoutSeconds: 20
+            periodSeconds: 300
+            timeoutSeconds: 150
             successThreshold: 1
             failureThreshold: 3
           livenessProbe:
             exec:
               command:
                 - /usr/mware/agent/probe.sh
-                - liveness
             initialDelaySeconds: 15
-            periodSeconds: 30
-            timeoutSeconds: 20
+            periodSeconds: 300
+            timeoutSeconds: 150
             successThreshold: 1
             failureThreshold: 3
           startupProbe:
             exec:
               command:
                 - /usr/mware/agent/probe.sh
-                - startup
             initialDelaySeconds: 30
-            periodSeconds: 15
-            timeoutSeconds: 15
+            periodSeconds: 300
+            timeoutSeconds: 150
             successThreshold: 1
             failureThreshold: 10

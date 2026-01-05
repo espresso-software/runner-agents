@@ -67,7 +67,13 @@ print_header "2. Configuring Github Actions Runner agent..."
   --replace \
   --disableupdate & wait $!
 
-print_header "3. Running Github Actions Runner agent..."
+print_header "3. Configure environment for the agent..."
+echo "http_proxy=${HTTP_PROXY}" >> /usr/mware/agent/.env
+echo "https_proxy=${HTTPS_PROXY}" >> /usr/mware/agent/.env
+echo "ftp_proxy=${FTP_PROXY}" >> /usr/mware/agent/.env
+echo "no_proxy=${NO_PROXY}" >> /usr/mware/agent/.env
+
+print_header "4. Running Github Actions Runner agent..."
 
 trap 'cleanup; exit 0' EXIT
 trap 'cleanup; exit 130' INT

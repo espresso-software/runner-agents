@@ -13,7 +13,8 @@
     agent_replicas: 3
     agent_labels: ansible
     agent_node_selectors: {}
-    agent_cpu_limits: 1000m
+    agent_cpu_requests: 250m
+    agent_cpu_limits: 1500m
     agemt_mem_requests: 256Mi
     agent_mem_limits: 2Gi
     agent_volumes:

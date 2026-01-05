@@ -18,12 +18,7 @@
         name: allow-agent-ssh
         namespace: "{{ agent_namespace }}"
       spec:
-        endpointSelector:
-          matchExpressions:
-            - key: "io.kubernetes.pod.namespace"
-              operator: "In"
-              values:
-                - "{{ agent_namespace }}"
+        endpointSelector: {}
         egress:
           - toCIDR:
               - 10.3.0.0/16 # Game Cloud Nodes
