@@ -40,7 +40,7 @@ jobs:
       - base-versioning
     runs-on:
       - self-hosted
-      - ansible-deploy
+      - deploy-ansible
       - x64
     env:
       TARGETARCH: linux-x64
@@ -77,7 +77,7 @@ jobs:
       - ansible-versioning
     runs-on:
       - self-hosted
-      - ansible-deploy
+      - deploy-ansible
       - x64
     env:
       TARGETARCH: linux-x64
@@ -102,7 +102,7 @@ jobs:
       - ansible-versioning
     runs-on:
       - self-hosted
-      - ansible-deploy
+      - deploy-ansible
     env:
       IMAGE_VERSION: ${{ needs.ansible-versioning.outputs.x64_tag }}
     steps:
