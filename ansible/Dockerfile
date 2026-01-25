@@ -12,11 +12,11 @@ RUN yum install -y \
   yum clean all;
 RUN pip3 install pipx; \
   python3 -m pipx ensurepath; \
-  pipx ensurepath --global; \
-  pipx install --include-deps ansible;
+  pipx ensurepath --global;
 ### SWAP TO AGENT USER
 USER agent
 
+RUN pipx install ansible;
 COPY files/ansible.cfg /etc/ansible/ansible.cfg
 
 ### Make SSH directory
