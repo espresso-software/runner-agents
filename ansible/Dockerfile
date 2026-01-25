@@ -8,14 +8,13 @@ USER root
 RUN yum install -y \
   python3 \
   python3-pip \
+  pipx \
   sshpass; \
   yum clean all;
-RUN ln -s /usr/mware/agent/.local/bin/ansible /usr/mware/agent/.local/bin/ansible-playbook /usr/bin/
+RUN pipx install --include-deps ansible
 
 ### SWAP TO AGENT USER
 USER agent
-
-RUN pip3 install --user ansible-core
 
 COPY files/ansible.cfg /etc/ansible/ansible.cfg
 
