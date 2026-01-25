@@ -10,13 +10,12 @@ RUN yum install -y \
   python3-pip \
   sshpass; \
   yum clean all;
-RUN pip3 install pipx; \
-  python3 -m pipx ensurepath; \
-  pipx ensurepath --global;
+RUN ln -s /usr/mware/agent/.local/bin/ansible /usr/mware/agent/.local/bin/ansible-playbook /usr/bin
+
 ### SWAP TO AGENT USER
 USER agent
 
-RUN pipx install ansible;
+RUN pip3 install --user ansible;
 COPY files/ansible.cfg /etc/ansible/ansible.cfg
 
 ### Make SSH directory

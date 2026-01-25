@@ -65,7 +65,9 @@ spec:
             - name: PROXY
               value: "http://{{ internet_proxy }}"
             - name: GH_ACTIONS_LABELS
-              value: "{{ agent_labels }}"
+              value: "{{ agent_labels | default('container') }}"
+            - name: GH_ACTIONS_RUNNER_GROUP
+              value: "{{ agent_runnergroup | default('Default') }}"
             - name: GH_ACTIONS_URL
               value: "{{ agent_url | default('https://github.com/espresso-software') }}"
             - name: TOKEN
@@ -91,7 +93,7 @@ spec:
               command:
                 - /usr/mware/agent/probe.sh
             initialDelaySeconds: 15
-            periodSeconds: 300
+            periodSeconds: 180
             timeoutSeconds: 150
             successThreshold: 1
             failureThreshold: 3
@@ -100,7 +102,7 @@ spec:
               command:
                 - /usr/mware/agent/probe.sh
             initialDelaySeconds: 15
-            periodSeconds: 300
+            periodSeconds: 180
             timeoutSeconds: 150
             successThreshold: 1
             failureThreshold: 3
@@ -109,7 +111,7 @@ spec:
               command:
                 - /usr/mware/agent/probe.sh
             initialDelaySeconds: 30
-            periodSeconds: 300
+            periodSeconds: 180
             timeoutSeconds: 150
             successThreshold: 1
             failureThreshold: 10

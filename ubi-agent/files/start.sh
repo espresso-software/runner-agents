@@ -63,8 +63,9 @@ print_header "2. Configuring Github Actions Runner agent..."
   --url "$GH_ACTIONS_URL" \
   --token "$RUNNER_TOKEN" \
   --work "${WORK:-_work}" \
-  --labels "${GH_ACTIONS_LABELS}" \
+  --labels "${GH_ACTIONS_LABELS:-container}" \
   --replace \
+  --runnergroup "${GH_ACTIONS_RUNNER_GROUP:-Default}" \
   --disableupdate & wait $!
 
 print_header "3. Configure environment for the agent..."
