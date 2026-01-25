@@ -28,11 +28,11 @@ on:
       - .github/actions/ubi-agent-build/**
       - roles/uat-deploy/**
   schedule:
-    - cron: '0 12 * * 5'
+    - cron: "0 12 * * 5"
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
-  GITHUB_ACTIONS_VERSION: '2.321.0'
+  GITHUB_ACTIONS_VERSION: "2.321.0"
   BUILD_DIR: ubi-agent
   STATEFUL_SET_NAME: ubi-agent
 
@@ -45,14 +45,14 @@ jobs:
       x64_tag: x64-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-${{ env.IMAGE_VERSION }}
       common_tag: ${{ env.IMAGE_VERSION }}
-    
+
     steps:
       - uses: actions/checkout@v2
       - uses: espresso-software/actions/common/versioning@main
         id: get_version
         with:
           version_file: ubi-agent/version.json
-  
+
   arm64-build:
     needs:
       - versioning
@@ -62,7 +62,7 @@ jobs:
       - ARM64
     env:
       TARGETARCH: linux-arm64
-  
+
     steps:
       - uses: actions/checkout@v2
 
@@ -76,7 +76,7 @@ jobs:
           targetarch: ${{ env.TARGETARCH }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
-  
+
   x64-build:
     needs:
       - versioning
@@ -84,13 +84,13 @@ jobs:
       - self-hosted
       - docker
       - x64
-    
+
     env:
       TARGETARCH: linux-x64
-  
+
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Build and publish image
         uses: ./.github/actions/ubi-agent-build
         env:
@@ -105,17 +105,16 @@ jobs:
   deploy:
     # comment this line to debug the entire pipeline
     if: github.event.pull_request || github.event_name == 'schedule'
-    needs: 
+    needs:
       - versioning
       - arm64-build
       - x64-build
     runs-on:
-      - self-hosted
-      - ansible
+      group: ansible
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{ secrets.READ_ACCESS_TOKEN }}
       - uses: espresso-software/actions/ansible/run-playbook@main
         env:
@@ -131,10 +130,10 @@ jobs:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT arch=arm64 labels=uat
-  
+
   promote:
     if: github.event.pull_request || github.event_name == 'schedule'
-    needs: 
+    needs:
       - versioning
       - arm64-build
       - x64-build
@@ -152,16 +151,16 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
           promote_tag: ${{ needs.versioning.outputs.x64_tag }}
-          skip_cleanup: 'true'
-      
+          skip_cleanup: "true"
+
       - name: Promote arm64 image
         uses: espresso-software/actions/docker/promote@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           old_tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
           promote_tag: ${{ needs.versioning.outputs.arm64_tag }}
-          skip_cleanup: 'true'
-      
+          skip_cleanup: "true"
+
       - name: Create release manifest
         uses: espresso-software/actions/docker/common-tag@main
         with:
@@ -169,7 +168,7 @@ jobs:
           tag: ${{ needs.versioning.outputs.common_tag }}
           x64_tag: ${{ needs.versioning.outputs.x64_tag }}
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
-      
+
       - name: Create latest manifest
         uses: espresso-software/actions/docker/common-tag@main
         with:
@@ -177,18 +176,17 @@ jobs:
           tag: latest
           x64_tag: ${{ needs.versioning.outputs.x64_tag }}
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
-      
+
   cleanup:
     if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - deploy
     runs-on:
-      - self-hosted
-      - ansible
+      group: ansible
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'recursive'
+          submodules: "recursive"
           token: ${{ secrets.READ_ACCESS_TOKEN }}
       - uses: espresso-software/actions/ansible/run-playbook@main
         env:
@@ -197,6 +195,3 @@ jobs:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.ini
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
-
-        
-        

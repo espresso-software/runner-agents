@@ -13,8 +13,7 @@ on:
 jobs:
   docker-self-heal:
     runs-on:
-      - self-hosted
-      - ansible
+      group: ansible
     steps:
       - name: Checkout
         uses: actions/checkout@v2

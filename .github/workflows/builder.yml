@@ -96,8 +96,7 @@ jobs:
       - versioning
       - x64-build
     runs-on:
-      - self-hosted
-      - ansible
+      group: ansible
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -178,8 +177,7 @@ jobs:
     needs:
       - uat-deploy
     runs-on:
-      - self-hosted
-      - ansible
+      group: ansible
     steps:
       - uses: actions/checkout@v2
         with:
@@ -202,8 +200,7 @@ jobs:
       - arm64-build
       - uat-deploy
     runs-on:
-      - self-hosted
-      - ansible
+      group: ansible
     env:
       COMMON_ARGS: agent_tag=${{ needs.versioning.outputs.common_tag }} agent_cpu_limits=2000m agent_mem_limits=4Gi agent_mem_requests=512Mi
     steps:
