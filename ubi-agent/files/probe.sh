@@ -29,6 +29,8 @@ fi
 
 while true; do
 	/usr/mware/agent/run.sh --check --url $GH_ACTIONS_URL --pat $GH_ACTIONS_HC_TOKEN || fail_probe
+	 > /tmp/runner_health_check.log 2>&1
+	echo "[INFO] Health check probe succeeded"
 	touch ${GH_HC_FILE}
 	sleep 30
 done

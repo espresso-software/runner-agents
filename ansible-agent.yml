@@ -11,6 +11,7 @@
     agent_stateful_set_name: ansible
     agent_arch: amd64
     agent_replicas: 1
+    agent_labels: ansible,container
     agent_runnergroup: ansible
     agent_node_selectors: {}
     agent_cpu_requests: 500m
