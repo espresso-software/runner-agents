@@ -10,6 +10,7 @@ RUN yum install -y \
   python3-pip \
   sshpass; \
   yum clean all;
+RUN ln -s /home/agent/.local/bin/ansible /home/agent/.local/bin/ansible-playbook /usr/bin/
 
 ### SWAP TO AGENT USER
 USER agent
