@@ -5,16 +5,15 @@ LABEL description="GitHub Actions Deployer Runner Ansible Deploy Agent Image"
 
 ### INSTALL DEPLOY AGENT DEPENDENCIES
 USER root
-RUN yum install -y 
-  epel-release; \
-  yum clean all;
 RUN yum install -y \
-  ansible \
   python3 \
   python3-pip \
   sshpass; \
   yum clean all;
-
+RUN pip3 install pipx; \
+  python3 -m pipx ensurepath; \
+  pipx ensurepath --global; \
+  pipx install --include-deps ansible;
 ### SWAP TO AGENT USER
 USER agent
 
