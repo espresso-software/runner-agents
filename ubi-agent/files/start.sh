@@ -82,6 +82,8 @@ trap 'cleanup; exit 143' TERM
 
 chmod +x ./bin/Runner.Listener
 
+nohup ./probe.sh &
+
 # To be aware of TERM and INT signals call run.sh
 # Running it with the --once flag at the end will shut down the agent after the build is executed
 ./bin/Runner.Listener run --startuptype service & wait $!

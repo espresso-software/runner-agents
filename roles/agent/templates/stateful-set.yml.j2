@@ -80,6 +80,8 @@ spec:
                 secretKeyRef:
                   name: gh-healthcheck-token
                   key: TOKEN
+            - name: GH_HC_FILE
+              value: "/tmp/.hc_file"
           volumeMounts:
             - name: workdir
               mountPath: /usr/mware/agent/_work
@@ -91,27 +93,27 @@ spec:
           readinessProbe:
             exec:
               command:
-                - /usr/mware/agent/probe.sh
+                - /usr/mware/agent/healthcheck.sh
             initialDelaySeconds: 15
-            periodSeconds: 180
-            timeoutSeconds: 150
+            periodSeconds: 60
+            timeoutSeconds: 10
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 10
           livenessProbe:
             exec:
               command:
-                - /usr/mware/agent/probe.sh
+                - /usr/mware/agent/healthcheck.sh
             initialDelaySeconds: 15
-            periodSeconds: 180
-            timeoutSeconds: 150
+            periodSeconds: 60
+            timeoutSeconds: 10
             successThreshold: 1
-            failureThreshold: 3
+            failureThreshold: 10
           startupProbe:
             exec:
               command:
-                - /usr/mware/agent/probe.sh
+                - /usr/mware/agent/healthcheck.sh
             initialDelaySeconds: 30
-            periodSeconds: 180
-            timeoutSeconds: 150
+            periodSeconds: 60
+            timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 10

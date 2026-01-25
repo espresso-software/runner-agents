@@ -89,8 +89,8 @@
           agent: github-actions
       type: Opaque
       data:
-        id_ed25519: "{{ ssh.ansible.key | b64encode }}"
-        id_ed25519.pub: "{{ ssh.ansible.cert | b64encode }}"
+        id_ed25519: "{{ (ssh.ansible.key + '\n') | b64encode }}"
+        id_ed25519.pub: "{{ (ssh.ansible.cert + '\n') | b64encode }}"
 
 - name: Update Agent StatefulSet
   kubernetes.core.k8s:
