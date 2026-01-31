@@ -20,7 +20,6 @@ spec:
         app: {{ agent_stateful_set_name }}
     spec:
       nodeSelector:
-        kubernetes.io/arch: {{ agent_arch }}
 {% for key, value in agent_node_selectors.items() %}
         {{ key }}: {{ value }}
 {% endfor %}
