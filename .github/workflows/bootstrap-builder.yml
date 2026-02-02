@@ -17,6 +17,7 @@ on:
       - ubi-agent/**
       - roles/agent/**
       - .github/workflows/bootstrap-builder.yml
+      - .github/actions/ubi-agent-build/action.yml
       - build-agent.yml
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
