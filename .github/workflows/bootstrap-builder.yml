@@ -192,6 +192,6 @@ jobs:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: build-agent.yml
-          inventory_path: inventory/restricted.yml
+          inventory_path: inventory/hosts.yml
           hosts: game-k3s
           vars: agent_tag=${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
