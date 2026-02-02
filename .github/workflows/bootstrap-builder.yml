@@ -27,7 +27,7 @@ jobs:
     runs-on:
       group: builder-bootstrap
     outputs:
-      x64_tag: x64-${{ env.IMAGE_VERSION }}
+      x64_tag: x64-DEV.58.BOOTSTRAP # x64-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-${{ env.IMAGE_VERSION }}
       common_tag: ${{ env.IMAGE_VERSION }}
 
@@ -38,28 +38,28 @@ jobs:
         with:
           version_file: ubi-agent/version.json
 
-  x64-base-build:
-    needs:
-      - base-versioning
-    runs-on:
-      group: builder-bootstrap
-      labels:
-        - x64
-    env:
-      TARGETARCH: linux-x64
-    steps:
-      - uses: actions/checkout@v2
+  # x64-base-build:
+  #   needs:
+  #     - base-versioning
+  #   runs-on:
+  #     group: builder-bootstrap
+  #     labels:
+  #       - x64
+  #   env:
+  #     TARGETARCH: linux-x64
+  #   steps:
+  #     - uses: actions/checkout@v2
 
-      - name: Build and publish image
-        uses: ./.github/actions/ubi-agent-build
-        env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-        with:
-          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
-          targetarch: ${{ env.TARGETARCH }}
-          build_directory: ubi-agent
-          tag: ${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
+  #     - name: Build and publish image
+  #       uses: ./.github/actions/ubi-agent-build
+  #       env:
+  #         DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+  #       with:
+  #         actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+  #         targetarch: ${{ env.TARGETARCH }}
+  #         build_directory: ubi-agent
+  #         tag: ${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
 
   arm64-base-build:
     needs:
@@ -101,7 +101,7 @@ jobs:
   x64-builder-build:
     needs:
       - base-versioning
-      - x64-base-build
+      # - x64-base-build
       - builder-versioning
     runs-on:
       group: builder-bootstrap
