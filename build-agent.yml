@@ -15,7 +15,7 @@
       "kubernetes.io/role": "worker"
       "espresso.software/docker": "true"
     agent_cpu_requests: 500m
-    agent_cpu_limits: 200m
+    agent_cpu_limits: 2000m
     agent_mem_requests: 512Mi
     agent_mem_limits: 4Gi
     agent_volumes:
