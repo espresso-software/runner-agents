@@ -20,9 +20,15 @@
     agent_volumes:
       - name: pnpm-cache
         emptyDir: {}
+      - name: docker-socket
+        hostPath:
+          path: /var/run/docker.sock
     agent_volume_mounts:
       - name: pnpm-cache
         mountPath: /usr/mware/agent/.pnpm-store
+        readOnly: false
+      - name: docker-socket
+        mountPath: /var/run/docker.sock
         readOnly: false
   roles:
     - agent
