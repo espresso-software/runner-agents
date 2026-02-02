@@ -153,6 +153,7 @@ jobs:
     needs:
       - x64-builder-build
       - arm64-builder-build
+      - builder-versioning
     runs-on:
       group: builder-bootstrap
     env:
