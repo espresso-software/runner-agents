@@ -58,6 +58,7 @@ jobs:
           targetarch: ${{ env.TARGETARCH }}
           build_directory: ubi-agent
           tag: ${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
+          platform: linux/amd64
 
   ansible-versioning:
     runs-on:
@@ -93,6 +94,7 @@ jobs:
           tag: ${{ needs.ansible-versioning.outputs.x64_tag }}.BOOTSTRAP
           build_dir: ${{ env.BUILD_DIR }}
           build_args: --build-arg TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
+          platform: linux/amd64
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
