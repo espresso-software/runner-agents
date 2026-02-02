@@ -166,7 +166,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           x64_tag: ${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
           arm64_tag: ${{ needs.builder-versioning.outputs.arm64_tag }}.BOOTSTRAP
-          common_tag: ${{ needs.builder-versioning.outputs.common_tag }}.BOOTSTRAP
+          tag: ${{ needs.builder-versioning.outputs.common_tag }}.BOOTSTRAP
 
   builder-deploy:
     needs:
