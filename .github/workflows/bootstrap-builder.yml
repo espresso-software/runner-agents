@@ -178,7 +178,7 @@ jobs:
       - promote
       - builder-versioning
     runs-on:
-      group: builder-bootstrap
+      group: ansible
       labels:
         - x64
     steps:
