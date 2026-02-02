@@ -1,4 +1,5 @@
-FROM coffee206/github-actions:latest
+ARG TAG=latest
+FROM coffee206/github-actions:${TAG}
 LABEL maintainer="Ty Foster"
 LABEL description="GitHub Actions UBI Runner Build Agent Image"
 

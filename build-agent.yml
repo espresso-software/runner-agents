@@ -1,0 +1,28 @@
+- name: Deploy Ansible Agent
+  hosts: game-k3s-managers
+  run_once: true
+  become: true
+  environment:
+    KUBECONFIG: "{{ kube_config_path }}"
+    K8S_AUTH_NO_PROXY: "{{ no_proxy }}"
+  vars:
+    agent_can_ssh: false
+    agent_stateful_set_name: build
+    agent_replicas: 4
+    agent_labels: docker,container
+    agent_runnergroup: docker
+    agent_node_selectors:
+      { "kubernetes.io/role": "worker", "espresso.software/docker": "true" }
+    agent_cpu_requests: 500m
+    agent_cpu_limits: 200m
+    agent_mem_requests: 512Mi
+    agent_mem_limits: 4Gi
+    agent_volumes:
+      - name: pnpm-cache
+        emptyDir: {}
+    agent_volume_mounts:
+      - name: pnpm-cache
+        mountPath: /usr/mware/agent/.pnpm-store
+        readOnly: false
+  roles:
+    - agent
