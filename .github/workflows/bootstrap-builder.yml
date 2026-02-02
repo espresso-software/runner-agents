@@ -27,7 +27,7 @@ jobs:
     runs-on:
       group: builder-bootstrap
     outputs:
-      x64_tag: x64-DEV.58.BOOTSTRAP # x64-${{ env.IMAGE_VERSION }}
+      x64_tag: x64-DEV.58 # x64-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-${{ env.IMAGE_VERSION }}
       common_tag: ${{ env.IMAGE_VERSION }}
 
