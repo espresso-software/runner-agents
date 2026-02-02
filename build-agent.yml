@@ -12,7 +12,8 @@
     agent_labels: docker,container
     agent_runnergroup: docker
     agent_node_selectors:
-      { "kubernetes.io/role": "worker", "espresso.software/docker": "true" }
+      "kubernetes.io/role": "worker"
+      "espresso.software/docker": "true"
     agent_cpu_requests: 500m
     agent_cpu_limits: 200m
     agent_mem_requests: 512Mi

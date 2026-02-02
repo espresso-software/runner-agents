@@ -179,8 +179,6 @@ jobs:
     #   - builder-versioning
     runs-on:
       group: ansible
-      labels:
-        - x64
     steps:
       - uses: actions/checkout@v2
         with:

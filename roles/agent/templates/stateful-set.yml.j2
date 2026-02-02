@@ -20,9 +20,7 @@ spec:
         app: {{ agent_stateful_set_name }}
     spec:
       nodeSelector:
-{% for key, value in agent_node_selectors.items() %}
-        {{ key }}: {{ value }}
-{% endfor %}
+        {{ agent_node_selectors | default({"kubernetes.io/role": "worker"}) | to_nice_yaml(indent=8) | indent(8) }}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
