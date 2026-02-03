@@ -104,7 +104,7 @@ jobs:
   x64-builder-build:
     needs:
       - base-versioning
-      # - x64-base-build
+      - x64-base-build
       - builder-versioning
     runs-on:
       group: builder-bootstrap
@@ -189,7 +189,7 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: build-agent.yml
+          playbook_path: agent.builder.yml
           inventory_path: inventory/hosts.yml
           hosts: game-k3s
-          vars: agent_tag=builder-DEV.10.BOOTSTRAP # ${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
+          vars: agent_tag=${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP

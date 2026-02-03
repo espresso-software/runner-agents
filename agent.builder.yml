@@ -6,11 +6,10 @@
     KUBECONFIG: "{{ kube_config_path }}"
     K8S_AUTH_NO_PROXY: "{{ no_proxy }}"
   vars:
-    agent_can_ssh: false
     agent_stateful_set_name: build
     agent_replicas: 4
     agent_labels: docker,container
-    agent_runnergroup: docker
+    agent_runnergroup: builder
     agent_node_selectors:
       "kubernetes.io/role": "worker"
       "espresso.software/docker": "true"

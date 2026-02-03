@@ -1,20 +1,17 @@
 ---
 - name: Deploy DEV Agent
-  hosts: game-k3s-managers
+  hosts: test-k3s-managers
   run_once: true
   become: true
   environment:
     KUBECONFIG: "{{ kube_config_path }}"
     K8S_AUTH_NO_PROXY: "{{ no_proxy }}"
   vars:
-    agent_can_ssh: false
-    agent_stateful_set_name: uat
     agent_replicas: 1
-    agent_labels: uat
-    agent_runnergroup: uat
+    agent_labels: test,container
     agent_node_selectors:
       "kubernetes.io/role": "worker"
-      "kubernetes.io/arch": "{{ arch | default('arm64') }}"
+      "kubernetes.io/arch": "{{ agent_arch | default('arm64') }}"
     agent_cpu_requests: 250m
     agent_cpu_limits: 1000m
     agent_mem_requests: 256Mi
