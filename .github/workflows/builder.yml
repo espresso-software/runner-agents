@@ -113,8 +113,6 @@ jobs:
     needs:
       - versioning
       - promote
-      - x64
-      - arm64
     runs-on:
       group: ansible
     steps:

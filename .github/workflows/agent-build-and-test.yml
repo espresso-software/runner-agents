@@ -22,15 +22,15 @@ on:
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
-  PLATFORM: linux/${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}
-  STATEFUL_SET_NAME: uat-${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}-${{ github.event.inputs.build_directory }}
-  BUILD_DIR: ${{ github.event.inputs.build_directory }}
+  PLATFORM: linux/${{ inputs.architecture == 'X64' && 'amd64' || 'arm64' }}
+  STATEFUL_SET_NAME: uat-${{ inputs.architecture == 'X64' && 'amd64' || 'arm64' }}-${{ inputs.build_directory }}
+  BUILD_DIR: ${{ inputs.build_directory }}
 
 jobs:
   build:
     runs-on:
       group: builder
-      labels: ["${{ github.event.inputs.architecture }}"]
+      labels: ["${{ inputs.architecture }}"]
     steps:
       - uses: actions/checkout@v2
 
@@ -40,7 +40,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           build_dir: ${{ env.BUILD_DIR }}
           platform: ${{ env.PLATFORM }}
-          tags: ${{ github.event.inputs.image_tag }}
+          tags: ${{ inputs.image_tag }}
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
@@ -67,7 +67,7 @@ jobs:
         with:
           playbook_path: agent.test.yml
           inventory_path: inventory/hosts.yml
-          vars: agent_tag=${{ github.event.inputs.image_tag }} agent_arch=${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm' }} agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+          vars: agent_tag=${{ inputs.image_tag }} agent_arch=${{ inputs.architecture == 'X64' && 'amd64' || 'arm' }} agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
 
