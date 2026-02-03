@@ -1,6 +1,8 @@
 ---
 - name: Deploy Ansible Agent
-  hosts: ansible-k3s-managers
+  hosts: 
+    - ansible-k3s-managers
+    - localhost
   run_once: true
   become: true
   environment:
@@ -18,7 +20,7 @@
       node-role.kubernetes.io/control-plane: "true"
     agent_cpu_requests: 500m
     agent_cpu_limits: 1500m
-    agemt_mem_requests: 512Mi
+    agent_mem_requests: 512Mi
     agent_mem_limits: 2Gi
     agent_volumes:
       - name: ssh-keys

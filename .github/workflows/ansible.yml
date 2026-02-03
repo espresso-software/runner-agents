@@ -204,3 +204,4 @@ jobs:
           playbook_path: agent.ansible.yml
           inventory_path: inventory/hosts.yml
           vars: agent_tag=${{ needs.versioning.outputs.common_tag }}
+          hosts: localhost
