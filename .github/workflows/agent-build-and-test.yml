@@ -15,11 +15,16 @@ on:
         description: "Tag to apply to the built image"
         required: true
         type: string
+      build_directory:
+        description: "Build directory"
+        required: true
+        type: string
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
   PLATFORM: linux/${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}
-  STATEFUL_SET_NAME: uat-${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}-${{ env.BUILD_DIR }}
+  STATEFUL_SET_NAME: uat-${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}-${{ github.event.inputs.build_directory }}
+  BUILD_DIR: ${{ github.event.inputs.build_directory }}
 
 jobs:
   build:

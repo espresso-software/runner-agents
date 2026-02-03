@@ -55,6 +55,7 @@ jobs:
     with:
       architecture: ARM64
       image_tag: ${{ needs.versioning.outputs.arm64_tag }}
+      build_directory: ${{ env.BUILD_DIR }}
 
   x64:
     needs:
@@ -64,6 +65,7 @@ jobs:
     with:
       architecture: X64
       image_tag: ${{ needs.versioning.outputs.x64_tag }}
+      build_directory: ${{ env.BUILD_DIR }}
 
   promote:
     if: github.event.pull_request || github.event_name == 'schedule'
