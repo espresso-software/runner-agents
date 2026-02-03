@@ -30,7 +30,8 @@ jobs:
   build:
     runs-on:
       group: builder
-      labels: ["${{ inputs.architecture }}"]
+      labels: 
+        - "${{ inputs.architecture }}"
     steps:
       - uses: actions/checkout@v2
 
@@ -40,7 +41,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           build_dir: ${{ env.BUILD_DIR }}
           platform: ${{ env.PLATFORM }}
-          tags: ${{ inputs.image_tag }}
+          tag: ${{ inputs.image_tag }}
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
