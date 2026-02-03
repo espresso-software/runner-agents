@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and publish image
-        uses: espresso-software/actions/docker/build-and-push@feature/docker-actions
+        uses: espresso-software/actions/docker/build-and-push@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
