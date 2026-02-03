@@ -29,9 +29,7 @@ on:
     - cron: "0 12 * * 6"
 
 env:
-  DOCKER_REPOSITORY: coffee206/github-actions
   BUILD_DIR: builder
-  STATEFUL_SET_NAME: builder
 
 jobs:
   versioning:
@@ -41,91 +39,37 @@ jobs:
       x64_tag: x64-builder-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-builder-${{ env.IMAGE_VERSION }}
       common_tag: builder-${{ env.IMAGE_VERSION }}
-
     steps:
       - uses: actions/checkout@v2
       - uses: espresso-software/actions/common/versioning@main
         id: get_version
         with:
-          version_file: builder/version.json
+          version_file: ${{ env.BUILD_DIR }}/version.json
 
-  arm64-build:
+  arm64:
     needs:
       - versioning
-    runs-on:
-      group: builder
-      labels:
-        - ARM64
-    steps:
-      - uses: actions/checkout@v2
+    uses: ./.github/workflows/agent-build-and-test.yml
+    secrets: inherit
+    with:
+      architecture: ARM64
+      image_tag: ${{ needs.versioning.outputs.arm64_tag }}
 
-      - name: Build and publish image
-        uses: espresso-software/actions/docker/build-and-push@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
-          build_dir: ${{ env.BUILD_DIR }}
-          platform: linux/arm64
-        env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-
-  x64-build:
+  x64:
     needs:
       - versioning
-    runs-on:
-      group: builder
-      labels:
-        - X64
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build and publish image
-        uses: espresso-software/actions/docker/build-and-push@main
-        with:
-          repository: ${{ env.DOCKER_REPOSITORY }}
-          tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
-          build_dir: ${{ env.BUILD_DIR }}
-          platform: linux/amd64
-        env:
-          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-
-  uat-deploy:
-    needs:
-      - versioning
-      - x64-build
-    runs-on:
-      group: ansible
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: "recursive"
-          token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - name: Cleanup uat
-        uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: agent.cleanup.yml
-          inventory_path: inventory/hosts.yml
-          vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
-      - name: Deploy x64 image
-        uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: agent.test.yml
-          inventory_path: inventory/hosts.yml
-          vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} agent_tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT agent_arch=amd64
+    uses: ./.github/workflows/agent-build-and-test.yml
+    secrets: inherit
+    with:
+      architecture: X64
+      image_tag: ${{ needs.versioning.outputs.x64_tag }}
 
   promote:
     if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
-      - x64-build
-      - arm64-build
-      - uat-deploy
+      - x64
+      - arm64
     runs-on:
       group: builder
     env:
@@ -163,24 +107,6 @@ jobs:
           tag: latest
           x64_tag: ${{ needs.versioning.outputs.x64_tag }}
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
-
-  uat-cleanup:
-    needs:
-      - uat-deploy
-    runs-on:
-      group: ansible
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          submodules: "recursive"
-          token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: agent.cleanup.yml
-          inventory_path: inventory/hosts.yml
-          vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
 
   deploy:
     if: github.event.pull_request || github.event_name == 'schedule'

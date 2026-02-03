@@ -1,0 +1,87 @@
+name: Agent Build and Test
+permissions:
+  contents: read
+  pull-requests: read
+  issues: write
+
+on:
+  workflow_call:
+    inputs:
+      architecture:
+        description: "Target architecture for the build (X64 or ARM64)"
+        required: true
+        type: string
+      image_tag:
+        description: "Tag to apply to the built image"
+        required: true
+        type: string
+
+env:
+  DOCKER_REPOSITORY: coffee206/github-actions
+  ARCH: ${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}
+  PLATFORM: linux/${{ env.ARCH }}
+  STATEFUL_SET_NAME: uat-${{ env.ARCH }}-${{ env.BUILD_DIR }}
+
+jobs:
+  build:
+    runs-on:
+      group: builder
+      labels:
+        - ${{ github.event.inputs.architecture }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build and publish image
+        uses: espresso-software/actions/docker/build-and-push@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          build_dir: ${{ env.BUILD_DIR }}
+          platform: ${{ env.PLATFORM }}
+          tags: ${{ github.event.inputs.image_tag }}
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+
+  test:
+    needs:
+      - build
+    runs-on:
+      group: ansible
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cleanup existing deployment
+        uses: espresso-software/actions/ansible/run-playbook@main
+        with:
+          playbook_path: agent.cleanup.yml
+          inventory_path: inventory/hosts.yml
+          vars: agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+
+      - name: Deploy built image for testing
+        uses: espresso-software/actions/ansible/run-playbook@main
+        with:
+          playbook_path: agent.test.yml
+          inventory_path: inventory/hosts.yml
+          vars: agent_tag=${{ github.event.inputs.image_tag }} agent_arch=${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm' }} agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
+
+  cleanup:
+    needs:
+      - test
+    if: ${{ always() }}
+    runs-on:
+      group: ansible
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cleanup deployment
+        uses: espresso-software/actions/ansible/run-playbook@main
+        with:
+          playbook_path: agent.cleanup.yml
+          inventory_path: inventory/hosts.yml
+          vars: agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
+        env:
+          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
