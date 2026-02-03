@@ -92,7 +92,7 @@ spec:
               command:
                 - /usr/mware/agent/healthcheck.sh
             initialDelaySeconds: 15
-            periodSeconds: 60
+            periodSeconds: {{ agent_health_poll_seconds | default(30) }}
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 10
@@ -101,7 +101,7 @@ spec:
               command:
                 - /usr/mware/agent/healthcheck.sh
             initialDelaySeconds: 15
-            periodSeconds: 60
+            periodSeconds: {{ agent_health_poll_seconds | default(30) }}
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 10
@@ -110,7 +110,7 @@ spec:
               command:
                 - /usr/mware/agent/healthcheck.sh
             initialDelaySeconds: 30
-            periodSeconds: 60
+            periodSeconds: {{ agent_health_poll_seconds | default(30) }}
             timeoutSeconds: 10
             successThreshold: 1
             failureThreshold: 10
