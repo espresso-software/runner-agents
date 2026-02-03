@@ -14,6 +14,7 @@ on:
     paths:
       - builder/**
       - .github/workflows/builder.yml
+      - .github/workflows/agent-build-and-test.yml
       - roles/agent/**
       - agent.builder.yml
   pull_request:
