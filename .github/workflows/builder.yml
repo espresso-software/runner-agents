@@ -29,9 +29,6 @@ on:
   schedule:
     - cron: "0 12 * * 6"
 
-env:
-  BUILD_DIR: builder
-
 jobs:
   versioning:
     runs-on:
@@ -45,7 +42,7 @@ jobs:
       - uses: espresso-software/actions/common/versioning@main
         id: get_version
         with:
-          version_file: ${{ env.BUILD_DIR }}/version.json
+          version_file: builder/version.json
 
   arm64:
     needs:
@@ -55,7 +52,7 @@ jobs:
     with:
       architecture: ARM64
       image_tag: ${{ needs.versioning.outputs.arm64_tag }}
-      build_directory: ${{ env.BUILD_DIR }}
+      build_directory: builder
 
   x64:
     needs:
@@ -65,7 +62,7 @@ jobs:
     with:
       architecture: X64
       image_tag: ${{ needs.versioning.outputs.x64_tag }}
-      build_directory: ${{ env.BUILD_DIR }}
+      build_directory: builder
 
   promote:
     if: github.event.pull_request || github.event_name == 'schedule'
