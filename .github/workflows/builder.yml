@@ -113,9 +113,8 @@ jobs:
     needs:
       - versioning
       - promote
-      - x64-build
-      - arm64-build
-      - uat-deploy
+      - x64
+      - arm64
     runs-on:
       group: ansible
     steps:
@@ -123,7 +122,7 @@ jobs:
         with:
           submodules: "recursive"
           token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - name: x64 deploy
+      - name: deploy
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
