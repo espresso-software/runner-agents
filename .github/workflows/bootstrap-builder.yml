@@ -9,174 +9,174 @@ permissions:
 # Controls when the workflow will run
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - main
-    paths:
-      - ansible/**
-      - ubi-agent/**
-      - roles/agent/**
-      - .github/workflows/bootstrap-builder.yml
-      - .github/actions/ubi-agent-build/action.yml
-      - build-agent.yml
+  # push:
+  #   branches-ignore:
+  #     - main
+  #   paths:
+  #     - ansible/**
+  #     - ubi-agent/**
+  #     - roles/agent/**
+  #     - .github/workflows/bootstrap-builder.yml
+  #     - .github/actions/ubi-agent-build/action.yml
+  #     - build-agent.yml
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
   GITHUB_ACTIONS_VERSION: "2.330.0"
 
 jobs:
-  # base-versioning:
-  #   runs-on:
-  #     group: builder-bootstrap
-  #   outputs:
-  #     x64_tag: x64-DEV.58 # x64-${{ env.IMAGE_VERSION }}
-  #     arm64_tag: arm64-${{ env.IMAGE_VERSION }}
-  #     common_tag: ${{ env.IMAGE_VERSION }}
+  base-versioning:
+    runs-on:
+      group: builder-bootstrap
+    outputs:
+      x64_tag: x64-DEV.58 # x64-${{ env.IMAGE_VERSION }}
+      arm64_tag: arm64-${{ env.IMAGE_VERSION }}
+      common_tag: ${{ env.IMAGE_VERSION }}
 
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: espresso-software/actions/common/versioning@main
-  #       id: get_version
-  #       with:
-  #         version_file: ubi-agent/version.json
+    steps:
+      - uses: actions/checkout@v2
+      - uses: espresso-software/actions/common/versioning@main
+        id: get_version
+        with:
+          version_file: ubi-agent/version.json
 
-  # x64-base-build:
-  #   needs:
-  #     - base-versioning
-  #   runs-on:
-  #     group: builder-bootstrap
-  #     labels:
-  #       - x64
-  #   env:
-  #     TARGETARCH: linux-x64
-  #   steps:
-  #     - uses: actions/checkout@v2
+  x64-base-build:
+    needs:
+      - base-versioning
+    runs-on:
+      group: builder-bootstrap
+      labels:
+        - x64
+    env:
+      TARGETARCH: linux-x64
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Build and publish image
-  #       uses: ./.github/actions/ubi-agent-build
-  #       env:
-  #         DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-  #       with:
-  #         actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
-  #         targetarch: ${{ env.TARGETARCH }}
-  #         build_directory: ubi-agent
-  #         tag: ${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
-  #         platform: linux/amd64
+      - name: Build and publish image
+        uses: ./.github/actions/ubi-agent-build
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+        with:
+          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+          targetarch: ${{ env.TARGETARCH }}
+          build_directory: ubi-agent
+          tag: ${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
+          platform: linux/amd64
 
-  # arm64-base-build:
-  #   needs:
-  #     - base-versioning
-  #   runs-on:
-  #     group: builder-bootstrap
-  #     labels:
-  #       - ARM64
-  #   env:
-  #     TARGETARCH: linux-arm64
-  #   steps:
-  #     - uses: actions/checkout@v2
+  arm64-base-build:
+    needs:
+      - base-versioning
+    runs-on:
+      group: builder-bootstrap
+      labels:
+        - ARM64
+    env:
+      TARGETARCH: linux-arm64
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Build and publish image
-  #       uses: ./.github/actions/ubi-agent-build
-  #       env:
-  #         DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-  #       with:
-  #         actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
-  #         targetarch: ${{ env.TARGETARCH }}
-  #         build_directory: ubi-agent
-  #         tag: ${{ needs.base-versioning.outputs.arm64_tag }}.BOOTSTRAP
-  #         platform: linux/arm64
+      - name: Build and publish image
+        uses: ./.github/actions/ubi-agent-build
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+        with:
+          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+          targetarch: ${{ env.TARGETARCH }}
+          build_directory: ubi-agent
+          tag: ${{ needs.base-versioning.outputs.arm64_tag }}.BOOTSTRAP
+          platform: linux/arm64
 
-  # builder-versioning:
-  #   runs-on:
-  #     group: builder-bootstrap
-  #   outputs:
-  #     x64_tag: x64-builder-${{ env.IMAGE_VERSION }}
-  #     arm64_tag: arm64-builder-${{ env.IMAGE_VERSION }}
-  #     common_tag: builder-${{ env.IMAGE_VERSION }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: espresso-software/actions/common/versioning@main
-  #       id: get_version
-  #       with:
-  #         version_file: builder/version.json
+  builder-versioning:
+    runs-on:
+      group: builder-bootstrap
+    outputs:
+      x64_tag: x64-builder-${{ env.IMAGE_VERSION }}
+      arm64_tag: arm64-builder-${{ env.IMAGE_VERSION }}
+      common_tag: builder-${{ env.IMAGE_VERSION }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: espresso-software/actions/common/versioning@main
+        id: get_version
+        with:
+          version_file: builder/version.json
 
-  # x64-builder-build:
-  #   needs:
-  #     - base-versioning
-  #     # - x64-base-build
-  #     - builder-versioning
-  #   runs-on:
-  #     group: builder-bootstrap
-  #     labels:
-  #       - x64
-  #   env:
-  #     TARGETARCH: linux-x64
-  #     BUILD_DIR: builder
-  #   steps:
-  #     - uses: actions/checkout@v2
+  x64-builder-build:
+    needs:
+      - base-versioning
+      # - x64-base-build
+      - builder-versioning
+    runs-on:
+      group: builder-bootstrap
+      labels:
+        - x64
+    env:
+      TARGETARCH: linux-x64
+      BUILD_DIR: builder
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Build and publish image
-  #       uses: espresso-software/actions/docker/build-and-push@main
-  #       with:
-  #         repository: ${{ env.DOCKER_REPOSITORY }}
-  #         tag: ${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
-  #         build_dir: ${{ env.BUILD_DIR }}
-  #         build_args: --build-arg TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
-  #         platform: linux/amd64
-  #       env:
-  #         DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+      - name: Build and publish image
+        uses: espresso-software/actions/docker/build-and-push@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: ${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
+          build_dir: ${{ env.BUILD_DIR }}
+          build_args: --build-arg TAG=${{ needs.base-versioning.outputs.x64_tag }}.BOOTSTRAP
+          platform: linux/amd64
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
 
-  # arm64-builder-build:
-  #   needs:
-  #     - base-versioning
-  #     - arm64-base-build
-  #     - builder-versioning
-  #   runs-on:
-  #     group: builder-bootstrap
-  #     labels:
-  #       - ARM64
-  #   env:
-  #     TARGETARCH: linux-arm64
-  #     BUILD_DIR: builder
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Build and publish image
-  #       uses: espresso-software/actions/docker/build-and-push@main
-  #       with:
-  #         repository: ${{ env.DOCKER_REPOSITORY }}
-  #         tag: ${{ needs.builder-versioning.outputs.arm64_tag }}.BOOTSTRAP
-  #         build_dir: ${{ env.BUILD_DIR }}
-  #         build_args: --build-arg TAG=${{ needs.base-versioning.outputs.arm64_tag }}.BOOTSTRAP
-  #         platform: linux/arm64
-  #       env:
-  #         DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+  arm64-builder-build:
+    needs:
+      - base-versioning
+      - arm64-base-build
+      - builder-versioning
+    runs-on:
+      group: builder-bootstrap
+      labels:
+        - ARM64
+    env:
+      TARGETARCH: linux-arm64
+      BUILD_DIR: builder
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and publish image
+        uses: espresso-software/actions/docker/build-and-push@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          tag: ${{ needs.builder-versioning.outputs.arm64_tag }}.BOOTSTRAP
+          build_dir: ${{ env.BUILD_DIR }}
+          build_args: --build-arg TAG=${{ needs.base-versioning.outputs.arm64_tag }}.BOOTSTRAP
+          platform: linux/arm64
+        env:
+          DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
 
-  # promote:
-  #   needs:
-  #     - x64-builder-build
-  #     - arm64-builder-build
-  #     - builder-versioning
-  #   runs-on:
-  #     group: builder-bootstrap
-  #   env:
-  #     DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
-  #   steps:
-  #     - name: Create common tag manifest
-  #       uses: espresso-software/actions/docker/common-tag@main
-  #       with:
-  #         repository: ${{ env.DOCKER_REPOSITORY }}
-  #         x64_tag: ${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
-  #         arm64_tag: ${{ needs.builder-versioning.outputs.arm64_tag }}.BOOTSTRAP
-  #         tag: ${{ needs.builder-versioning.outputs.common_tag }}.BOOTSTRAP
+  promote:
+    needs:
+      - x64-builder-build
+      - arm64-builder-build
+      - builder-versioning
+    runs-on:
+      group: builder-bootstrap
+    env:
+      DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
+    steps:
+      - name: Create common tag manifest
+        uses: espresso-software/actions/docker/common-tag@main
+        with:
+          repository: ${{ env.DOCKER_REPOSITORY }}
+          x64_tag: ${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
+          arm64_tag: ${{ needs.builder-versioning.outputs.arm64_tag }}.BOOTSTRAP
+          tag: ${{ needs.builder-versioning.outputs.common_tag }}.BOOTSTRAP
 
   builder-deploy:
-    # needs:
-    #   - promote
-    #   - builder-versioning
+    needs:
+      - promote
+      - builder-versioning
     runs-on:
       group: ansible
     steps:
