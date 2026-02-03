@@ -65,6 +65,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
           build_dir: ${{ env.BUILD_DIR }}
+          platform: linux/arm64
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
@@ -84,6 +85,7 @@ jobs:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
           build_dir: ${{ env.BUILD_DIR }}
+          platform: linux/amd64
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
