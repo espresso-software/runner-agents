@@ -39,8 +39,7 @@ env:
 jobs:
   versioning:
     runs-on:
-      - self-hosted
-      - docker
+      group: docker
     outputs:
       x64_tag: x64-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-${{ env.IMAGE_VERSION }}
@@ -57,9 +56,9 @@ jobs:
     needs:
       - versioning
     runs-on:
-      - self-hosted
-      - docker
-      - ARM64
+      group: docker
+      labels:
+        - ARM64
     env:
       TARGETARCH: linux-arm64
 
@@ -76,14 +75,15 @@ jobs:
           targetarch: ${{ env.TARGETARCH }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+          platform: linux/arm64
 
   x64-build:
     needs:
       - versioning
     runs-on:
-      - self-hosted
-      - docker
-      - x64
+      group: docker
+      labels:
+        - X64
 
     env:
       TARGETARCH: linux-x64
@@ -101,6 +101,7 @@ jobs:
           targetarch: ${{ env.TARGETARCH }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
+          platform: linux/amd64
 
   deploy:
     # comment this line to debug the entire pipeline
@@ -139,8 +140,7 @@ jobs:
       - x64-build
       - deploy
     runs-on:
-      - self-hosted
-      - docker
+      group: docker
     env:
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
