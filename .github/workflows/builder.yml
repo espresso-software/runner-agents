@@ -36,7 +36,7 @@ env:
 jobs:
   versioning:
     runs-on:
-      group: docker
+      group: builder
     outputs:
       x64_tag: x64-builder-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-builder-${{ env.IMAGE_VERSION }}
@@ -53,7 +53,7 @@ jobs:
     needs:
       - versioning
     runs-on:
-      group: docker
+      group: builder
       labels:
         - ARM64
     steps:
@@ -74,7 +74,7 @@ jobs:
     needs:
       - versioning
     runs-on:
-      group: docker
+      group: builder
       labels:
         - X64
     steps:
@@ -120,14 +120,14 @@ jobs:
           vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} agent_tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT agent_arch=amd64
 
   promote:
-    # if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - x64-build
       - arm64-build
       - uat-deploy
     runs-on:
-      group: docker
+      group: builder
     env:
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
@@ -183,7 +183,7 @@ jobs:
           vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
 
   deploy:
-    # if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - promote

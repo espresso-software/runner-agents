@@ -40,7 +40,7 @@ env:
 jobs:
   versioning:
     runs-on:
-      group: docker
+      group: builder
     outputs:
       x64_tag: x64-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-${{ env.IMAGE_VERSION }}
@@ -57,7 +57,7 @@ jobs:
     needs:
       - versioning
     runs-on:
-      group: docker
+      group: builder
       labels:
         - ARM64
     env:
@@ -82,7 +82,7 @@ jobs:
     needs:
       - versioning
     runs-on:
-      group: docker
+      group: builder
       labels:
         - X64
 
@@ -140,7 +140,7 @@ jobs:
       - x64-build
       - deploy
     runs-on:
-      group: docker
+      group: builder
     env:
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
