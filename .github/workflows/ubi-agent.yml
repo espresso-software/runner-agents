@@ -28,7 +28,7 @@ on:
       - agent.cleanup.yml
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
-      - roles/uat-deploy/**
+      - roles/deploy/**
   schedule:
     - cron: "0 12 * * 5"
 
