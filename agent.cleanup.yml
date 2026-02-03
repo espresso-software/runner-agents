@@ -1,7 +1,7 @@
 ---
 - name: Deploy DEV Agent
   hosts:
-    - "{{ agent_cluster | default('game-k3s-managers') }}"
+    {{ agent_cluster | default('game-k3s-managers') }}
   run_once: true
   become: true
   environment:

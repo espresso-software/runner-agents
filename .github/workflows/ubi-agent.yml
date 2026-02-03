@@ -194,6 +194,6 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: cleanup.yml
+          playbook_path: agent.cleanup.yml
           inventory_path: inventory/hosts.ini
           vars: agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
