@@ -1,4 +1,4 @@
-- name: Deploy Ansible Agent
+- name: Deploy Build Agent
   hosts: game-k3s-managers
   run_once: true
   become: true
