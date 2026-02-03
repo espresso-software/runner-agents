@@ -36,7 +36,7 @@ spec:
           emptyDir: {}
         - name: tempdir
           emptyDir: {}
-{% for volume in agent_volumes %}
+{% for volume in agent_volumes | default([]) %}
         - {{ volume | to_json }}
 {% endfor %}
       containers:
@@ -84,7 +84,7 @@ spec:
               mountPath: /usr/mware/agent/_work
             - name: tempdir
               mountPath: /tmp
-{% for volume_mount in agent_volume_mounts %}
+{% for volume_mount in agent_volume_mounts | default([]) %}
             - {{ volume_mount | to_json }}
 {% endfor %}
           readinessProbe:

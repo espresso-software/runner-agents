@@ -1,6 +1,6 @@
 ---
 - name: Deploy DEV Agent
-  hosts: k3s_managers
+  hosts: game-k3s-managers
   run_once: true
   become: true
   environment:
