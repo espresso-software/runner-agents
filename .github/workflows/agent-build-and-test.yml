@@ -18,9 +18,8 @@ on:
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
-  ARCH: ${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}
-  PLATFORM: linux/${{ env.ARCH }}
-  STATEFUL_SET_NAME: uat-${{ env.ARCH }}-${{ env.BUILD_DIR }}
+  PLATFORM: linux/${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}
+  STATEFUL_SET_NAME: uat-${{ github.event.inputs.architecture == 'X64' && 'amd64' || 'arm64' }}-${{ env.BUILD_DIR }}
 
 jobs:
   build:
