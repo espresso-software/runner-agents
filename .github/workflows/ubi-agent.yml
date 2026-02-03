@@ -15,7 +15,6 @@ on:
       - ubi-agent/**
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
-      # Uncomment below for deployment feature development
       - roles/agent/**
       - agent.test.yml
       - agent.cleanup.yml
@@ -106,8 +105,6 @@ jobs:
           platform: linux/amd64
 
   deploy:
-    # comment this line to debug the entire pipeline
-    # if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - arm64-build
@@ -135,7 +132,8 @@ jobs:
           vars: agent_tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT agent_arch=arm64 agent_stateful_set_name=${{ env.STATEFUL_SET_NAME }}
 
   promote:
-    # if: github.event.pull_request || github.event_name == 'schedule'
+    # Comment below line to debug promotion
+    if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - arm64-build
@@ -180,7 +178,6 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
 
   cleanup:
-    # if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - deploy
     runs-on:

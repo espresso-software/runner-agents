@@ -14,18 +14,17 @@ on:
     paths:
       - builder/**
       - .github/workflows/builder.yml
-      # Uncomment below for deployment feature development
-      # - roles/deploy/**
-      # - deploy.yml
+      - roles/agent/**
+      - agent.builder.yml
   pull_request:
     branches:
       - main
     paths:
       - builder/**
-      - deploy.yml
+      - agent.builder.yml
       - docker.yml
       - .github/workflows/builder.yml
-      - roles/deploy/**
+      - roles/agent/**
   schedule:
     - cron: "0 12 * * 6"
 
@@ -37,8 +36,7 @@ env:
 jobs:
   versioning:
     runs-on:
-      - self-hosted
-      - docker
+      group: docker
     outputs:
       x64_tag: x64-builder-${{ env.IMAGE_VERSION }}
       arm64_tag: arm64-builder-${{ env.IMAGE_VERSION }}
@@ -55,9 +53,9 @@ jobs:
     needs:
       - versioning
     runs-on:
-      - self-hosted
-      - docker
-      - ARM64
+      group: docker
+      labels:
+        - ARM64
     steps:
       - uses: actions/checkout@v2
 
@@ -75,9 +73,9 @@ jobs:
     needs:
       - versioning
     runs-on:
-      - self-hosted
-      - docker
-      - x64
+      group: docker
+      labels:
+        - X64
     steps:
       - uses: actions/checkout@v2
       - name: Build and publish image
@@ -91,7 +89,6 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
 
   uat-deploy:
-    if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - x64-build
@@ -108,8 +105,8 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
+          playbook_path: agent.cleanup.yml
+          inventory_path: inventory/hosts.yml
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
       - name: Install docker
         uses: espresso-software/actions/ansible/run-playbook@main
@@ -117,26 +114,25 @@ jobs:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: docker.yml
-          inventory_path: inventory/hosts.ini
+          inventory_path: inventory/hosts.yml
       - name: Deploy x64 image
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: deploy.yml
-          inventory_path: inventory/hosts.ini
-          vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} agent_tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT agent_arch=amd64 agent_labels=uat
+          playbook_path: agent.test.yml
+          inventory_path: inventory/hosts.yml
+          vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} agent_tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT agent_arch=amd64
 
   promote:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    # if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - x64-build
       - arm64-build
       - uat-deploy
     runs-on:
-      - self-hosted
-      - docker
+      group: docker
     env:
       DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
@@ -187,12 +183,12 @@ jobs:
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
+          playbook_path: agent.cleanup.yml
+          inventory_path: inventory/hosts.yml
           vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
 
   deploy:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    # if: github.event.pull_request || github.event_name == 'schedule'
     needs:
       - versioning
       - promote
@@ -201,26 +197,16 @@ jobs:
       - uat-deploy
     runs-on:
       group: ansible
-    env:
-      COMMON_ARGS: agent_tag=${{ needs.versioning.outputs.common_tag }} agent_cpu_limits=2000m agent_mem_limits=4Gi agent_mem_requests=512Mi
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: "recursive"
           token: ${{ secrets.READ_ACCESS_TOKEN }}
-      - name: Arm64 deploy
-        uses: espresso-software/actions/ansible/run-playbook@main
-        env:
-          VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
-        with:
-          playbook_path: deploy.yml
-          inventory_path: inventory/hosts.ini
-          vars: agent_stateful_set_name=arm64-${{ env.STATEFUL_SET_NAME }} agent_arch=arm64 agent_replicas=2 ${{ env.COMMON_ARGS }}
       - name: x64 deploy
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
-          playbook_path: deploy.yml
-          inventory_path: inventory/hosts.ini
-          vars: agent_stateful_set_name=x64-${{ env.STATEFUL_SET_NAME }} agent_arch=amd64 agent_replicas=2 ${{ env.COMMON_ARGS }}
+          playbook_path: agent.builder.yml
+          inventory_path: inventory/hosts.yml
+          vars: agent_tag=${{ needs.versioning.outputs.common_tag }}
