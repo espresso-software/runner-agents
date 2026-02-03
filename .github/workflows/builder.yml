@@ -109,7 +109,7 @@ jobs:
         with:
           playbook_path: agent.cleanup.yml
           inventory_path: inventory/hosts.yml
-          vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
+          vars: agent_stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
       - name: Install docker
         uses: espresso-software/actions/ansible/run-playbook@main
         env:
