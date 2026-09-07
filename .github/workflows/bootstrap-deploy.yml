@@ -9,16 +9,16 @@ permissions:
 # Controls when the workflow will run
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - main
-    paths:
-      - ansible/**
-      - ubi-agent/**
-      - roles/agent/**
-      - .github/workflows/bootstrap-deploy.yml
-      - .github/actions/ubi-agent-build/action.yml
-      - ansible-agent.yml
+  # push:
+  #   branches-ignore:
+  #     - main
+  #   paths:
+  #     - ansible/**
+  #     - ubi-agent/**
+  #     - roles/agent/**
+  #     - .github/workflows/bootstrap-deploy.yml
+  #     - .github/actions/ubi-agent-build/action.yml
+  #     - ansible-agent.yml
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
   GITHUB_ACTIONS_VERSION: "2.337.0"
