@@ -192,4 +192,4 @@ jobs:
           playbook_path: agent.builder.yml
           inventory_path: inventory/hosts.yml
           hosts: game-k3s
-          vars: agent_tag=${{ needs.builder-versioning.outputs.x64_tag }}.BOOTSTRAP
+          vars: agent_tag=${{ needs.builder-versioning.outputs.common_tag }}.BOOTSTRAP
