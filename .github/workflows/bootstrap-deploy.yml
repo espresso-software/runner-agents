@@ -12,7 +12,6 @@ on:
 
 env:
     DOCKER_REPOSITORY: coffee206/github-actions
-    GITHUB_ACTIONS_VERSION: "2.330.0"
 
 jobs:
     base-versioning:
@@ -23,6 +22,7 @@ jobs:
             x64_tag: x64-${{ env.IMAGE_VERSION }}
             arm64_tag: arm64-${{ env.IMAGE_VERSION }}
             common_tag: ${{ env.IMAGE_VERSION }}
+            runner_version: ${{ steps.runner_version.outputs.version }}
 
         steps:
             - uses: actions/checkout@v2
@@ -30,6 +30,11 @@ jobs:
               id: get_version
               with:
                   version_file: ubi-agent/version.json
+            - name: Resolve runner version
+              id: runner_version
+              uses: ./.github/actions/runner-version
+              with:
+                token: ${{ github.token }}
 
     base-x64-build:
         needs:
@@ -49,7 +54,7 @@ jobs:
                   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
                   DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
               with:
-                  actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+                  actions_version: ${{ needs.base-versioning.outputs.runner_version }}
                   targetarch: ${{ env.TARGETARCH }}
                   build_directory: ubi-agent
                   tag: ${{ needs.base-versioning.outputs.x64_tag }}.SNAPSHOT
