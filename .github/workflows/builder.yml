@@ -66,6 +66,7 @@ jobs:
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+          platform: linux/arm64
           build_dir: ${{ env.BUILD_DIR }}
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
@@ -81,10 +82,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build and publish image
-        uses: espresso-software/actions/docker/build-and-push@feature/docker-actions
+        uses: espresso-software/actions/docker/build-and-push@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
+          platform: linux/amd64
           build_dir: ${{ env.BUILD_DIR }}
         env:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
