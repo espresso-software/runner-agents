@@ -36,3 +36,12 @@ change those paths, `deploy.yml`, `docker.yml`, or `roles/deploy/**`. Weekly
 builds run on Sundays at 12:00 UTC. Branch pushes build snapshot images;
 pull requests, weekly builds, and manual runs execute the full build, UAT,
 promotion, cleanup, and deployment pipeline.
+
+The image workflows limit Ansible operations to `game-k3s`, which contains
+the runner cluster managers and Docker build hosts. Other clusters in the
+shared inventory are not deployment targets for these workflows.
+
+The Ansible image installs Ansible and the Kubernetes Python client in a
+Python 3.12 virtual environment. Image builds verify the Ansible CLI,
+Kubernetes collection, and SSH tools as the agent user, whose SSH directory
+is `/usr/mware/agent/.ssh`.
