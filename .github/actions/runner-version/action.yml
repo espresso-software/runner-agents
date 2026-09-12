@@ -1,0 +1,52 @@
+name: Resolve GitHub Actions runner version
+description: Resolve the latest stable runner release once per workflow run
+inputs:
+  token:
+    description: GitHub token for the release API
+    required: true
+outputs:
+  version:
+    description: Runner version without the leading v
+    value: ${{ steps.release.outputs.version }}
+  image_version:
+    description: Runner version with the workflow build number and branch qualifier
+    value: ${{ steps.image.outputs.version }}
+runs:
+  using: composite
+  steps:
+    - name: Resolve latest stable runner release
+      id: release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        set -euo pipefail
+        release="$(curl --fail --silent --show-error --location \
+          --connect-timeout 10 --max-time 60 --retry 3 \
+          -H "Authorization: Bearer ${GH_TOKEN}" \
+          -H 'Accept: application/vnd.github+json' \
+          https://api.github.com/repos/actions/runner/releases/latest)"
+        if ! tag="$(jq -er '.tag_name | strings' <<< "$release")" ||
+          [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo '::error::Latest runner release has a missing or invalid version tag' >&2
+          exit 1
+        fi
+        version="${tag#v}"
+        echo "Resolved GitHub Actions runner version: $version"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+    - name: Generate image version
+      id: image
+      shell: bash
+      env:
+        RUNNER_VERSION: ${{ steps.release.outputs.version }}
+        BUILD_NUMBER: ${{ github.run_number }}
+        BUILD_REF: ${{ github.ref }}
+      run: |
+        set -euo pipefail
+        if [[ "$BUILD_REF" == 'refs/heads/main' ]]; then
+          version="${RUNNER_VERSION}-${BUILD_NUMBER}"
+        else
+          version="${RUNNER_VERSION}-DEV.${BUILD_NUMBER}"
+        fi
+        echo "Image version: $version"
+        echo "version=$version" >> "$GITHUB_OUTPUT"

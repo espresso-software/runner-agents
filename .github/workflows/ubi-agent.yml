@@ -15,6 +15,7 @@ on:
       - ubi-agent/**
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
+      - .github/actions/runner-version/**
       # Uncomment below for deployment feature development
       # - roles/deploy/**
       # - deploy.yml
@@ -26,13 +27,13 @@ on:
       - deploy.yml
       - .github/workflows/ubi-agent.yml
       - .github/actions/ubi-agent-build/**
+      - .github/actions/runner-version/**
       - roles/uat-deploy/**
   schedule:
     - cron: '0 12 * * 5'
 
 env:
   DOCKER_REPOSITORY: coffee206/github-actions
-  GITHUB_ACTIONS_VERSION: '2.321.0'
   BUILD_DIR: ubi-agent
   STATEFUL_SET_NAME: ubi-agent
 
@@ -42,16 +43,18 @@ jobs:
       - self-hosted
       - docker
     outputs:
-      x64_tag: x64-${{ env.IMAGE_VERSION }}
-      arm64_tag: arm64-${{ env.IMAGE_VERSION }}
-      common_tag: ${{ env.IMAGE_VERSION }}
+      x64_tag: x64-${{ steps.runner_version.outputs.image_version }}
+      arm64_tag: arm64-${{ steps.runner_version.outputs.image_version }}
+      common_tag: ${{ steps.runner_version.outputs.image_version }}
+      runner_version: ${{ steps.runner_version.outputs.version }}
     
     steps:
       - uses: actions/checkout@v2
-      - uses: espresso-software/actions/common/versioning@main
-        id: get_version
+      - name: Resolve runner version
+        id: runner_version
+        uses: ./.github/actions/runner-version
         with:
-          version_file: ubi-agent/version.json
+          token: ${{ github.token }}
   
   arm64-build:
     needs:
@@ -62,6 +65,7 @@ jobs:
       - ARM64
     env:
       TARGETARCH: linux-arm64
+      PLATFORM: linux/arm64
   
     steps:
       - uses: actions/checkout@v2
@@ -72,8 +76,9 @@ jobs:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
         with:
-          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+          actions_version: ${{ needs.versioning.outputs.runner_version }}
           targetarch: ${{ env.TARGETARCH }}
+          platform: ${{ env.PLATFORM }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
   
@@ -87,6 +92,7 @@ jobs:
     
     env:
       TARGETARCH: linux-x64
+      PLATFORM: linux/amd64
   
     steps:
       - uses: actions/checkout@v2
@@ -97,8 +103,9 @@ jobs:
           DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
         with:
-          actions_version: ${{ env.GITHUB_ACTIONS_VERSION }}
+          actions_version: ${{ needs.versioning.outputs.runner_version }}
           targetarch: ${{ env.TARGETARCH }}
+          platform: ${{ env.PLATFORM }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
 
@@ -122,14 +129,14 @@ jobs:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
+          inventory_path: inventory/hosts.yml
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
       - uses: espresso-software/actions/ansible/run-playbook@main
         env:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: deploy.yml
-          inventory_path: inventory/hosts.ini
+          inventory_path: inventory/hosts.yml
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT arch=arm64 labels=uat
   
   promote:
@@ -171,6 +178,7 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
       - name: Create latest manifest
+        if: github.ref == 'refs/heads/main'
         uses: espresso-software/actions/docker/common-tag@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}
@@ -195,7 +203,7 @@ jobs:
           VAULT_DECRYPT_TOKEN: ${{ secrets.VAULT_DECRYPT_TOKEN }}
         with:
           playbook_path: cleanup.yml
-          inventory_path: inventory/hosts.ini
+          inventory_path: inventory/hosts.yml
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
 
         

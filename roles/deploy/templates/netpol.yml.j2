@@ -71,7 +71,7 @@ spec:
   egress:
     - to:
         - ipBlock:
-            cidr: {{ network.proxy | split(':') | first }}/32
+            cidr: {{ internet_proxy | split(':') | first }}/32
       ports:
         - protocol: TCP
-          port: {{ network.proxy | split(':') | last }}
+          port: {{ internet_proxy | split(':') | last }}
