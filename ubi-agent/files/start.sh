@@ -13,7 +13,7 @@ if [ -n "$TOKEN_FILE" ]; then
     echo 1>&2 "error: TOKEN_FILE '$TOKEN_FILE' does not exist"
     exit 1
   fi
-else
+fi
 
 if [ -z "$TOKEN" ]; then
   echo 1>&2 "error: missing TOKEN environment variable"
