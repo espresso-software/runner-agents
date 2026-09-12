@@ -33,4 +33,5 @@ runs:
       with:
         repository: ${{ env.DOCKER_REPOSITORY }}
         tag: ${{ inputs.tag }}
+        platform: ${{ inputs.platform }}
         build_dir: ${{ inputs.build_directory }}

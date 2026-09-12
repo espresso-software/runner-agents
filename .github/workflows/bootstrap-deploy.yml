@@ -19,17 +19,13 @@ jobs:
             - self-hosted
             - swarm
         outputs:
-            x64_tag: x64-${{ env.IMAGE_VERSION }}
-            arm64_tag: arm64-${{ env.IMAGE_VERSION }}
-            common_tag: ${{ env.IMAGE_VERSION }}
+            x64_tag: x64-${{ steps.runner_version.outputs.image_version }}
+            arm64_tag: arm64-${{ steps.runner_version.outputs.image_version }}
+            common_tag: ${{ steps.runner_version.outputs.image_version }}
             runner_version: ${{ steps.runner_version.outputs.version }}
 
         steps:
             - uses: actions/checkout@v2
-            - uses: espresso-software/actions/common/versioning@main
-              id: get_version
-              with:
-                  version_file: ubi-agent/version.json
             - name: Resolve runner version
               id: runner_version
               uses: ./.github/actions/runner-version
@@ -45,6 +41,7 @@ jobs:
             - x64
         env:
             TARGETARCH: linux-x64
+            PLATFORM: linux/amd64
         steps:
             - uses: actions/checkout@v2
 
@@ -56,6 +53,7 @@ jobs:
               with:
                   actions_version: ${{ needs.base-versioning.outputs.runner_version }}
                   targetarch: ${{ env.TARGETARCH }}
+                  platform: ${{ env.PLATFORM }}
                   build_directory: ubi-agent
                   tag: ${{ needs.base-versioning.outputs.x64_tag }}.SNAPSHOT
 
@@ -87,6 +85,7 @@ jobs:
                   arm64_tag: ${{ needs.base-versioning.outputs.arm64_tag }}
 
             - name: Create latest manifest
+              if: github.ref == 'refs/heads/main'
               uses: espresso-software/actions/docker/common-tag@main
               with:
                   repository: ${{ env.DOCKER_REPOSITORY }}
@@ -115,6 +114,7 @@ jobs:
             - x64
         env:
             TARGETARCH: linux-x64
+            PLATFORM: linux/amd64
             BUILD_DIR: deploy
         steps:
             - uses: actions/checkout@v2
@@ -124,6 +124,7 @@ jobs:
               with:
                 repository: ${{ env.DOCKER_REPOSITORY }}
                 tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
+                platform: ${{ env.PLATFORM }}
                 build_dir: deploy
               env:
                 DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}

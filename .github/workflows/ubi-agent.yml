@@ -43,17 +43,13 @@ jobs:
       - self-hosted
       - docker
     outputs:
-      x64_tag: x64-${{ env.IMAGE_VERSION }}
-      arm64_tag: arm64-${{ env.IMAGE_VERSION }}
-      common_tag: ${{ env.IMAGE_VERSION }}
+      x64_tag: x64-${{ steps.runner_version.outputs.image_version }}
+      arm64_tag: arm64-${{ steps.runner_version.outputs.image_version }}
+      common_tag: ${{ steps.runner_version.outputs.image_version }}
       runner_version: ${{ steps.runner_version.outputs.version }}
     
     steps:
       - uses: actions/checkout@v2
-      - uses: espresso-software/actions/common/versioning@main
-        id: get_version
-        with:
-          version_file: ubi-agent/version.json
       - name: Resolve runner version
         id: runner_version
         uses: ./.github/actions/runner-version
@@ -69,6 +65,7 @@ jobs:
       - ARM64
     env:
       TARGETARCH: linux-arm64
+      PLATFORM: linux/arm64
   
     steps:
       - uses: actions/checkout@v2
@@ -81,6 +78,7 @@ jobs:
         with:
           actions_version: ${{ needs.versioning.outputs.runner_version }}
           targetarch: ${{ env.TARGETARCH }}
+          platform: ${{ env.PLATFORM }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT
   
@@ -94,6 +92,7 @@ jobs:
     
     env:
       TARGETARCH: linux-x64
+      PLATFORM: linux/amd64
   
     steps:
       - uses: actions/checkout@v2
@@ -106,6 +105,7 @@ jobs:
         with:
           actions_version: ${{ needs.versioning.outputs.runner_version }}
           targetarch: ${{ env.TARGETARCH }}
+          platform: ${{ env.PLATFORM }}
           build_directory: ${{ env.BUILD_DIR }}
           tag: ${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT
 
@@ -178,6 +178,7 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
       - name: Create latest manifest
+        if: github.ref == 'refs/heads/main'
         uses: espresso-software/actions/docker/common-tag@main
         with:
           repository: ${{ env.DOCKER_REPOSITORY }}

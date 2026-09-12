@@ -8,6 +8,9 @@ outputs:
   version:
     description: Runner version without the leading v
     value: ${{ steps.release.outputs.version }}
+  image_version:
+    description: Runner version with the workflow build number and branch qualifier
+    value: ${{ steps.image.outputs.version }}
 runs:
   using: composite
   steps:
@@ -30,4 +33,20 @@ runs:
         fi
         version="${tag#v}"
         echo "Resolved GitHub Actions runner version: $version"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+    - name: Generate image version
+      id: image
+      shell: bash
+      env:
+        RUNNER_VERSION: ${{ steps.release.outputs.version }}
+        BUILD_NUMBER: ${{ github.run_number }}
+        BUILD_REF: ${{ github.ref }}
+      run: |
+        set -euo pipefail
+        if [[ "$BUILD_REF" == 'refs/heads/main' ]]; then
+          version="${RUNNER_VERSION}-${BUILD_NUMBER}"
+        else
+          version="${RUNNER_VERSION}-DEV.${BUILD_NUMBER}"
+        fi
+        echo "Image version: $version"
         echo "version=$version" >> "$GITHUB_OUTPUT"
