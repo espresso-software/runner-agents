@@ -8,6 +8,7 @@ permissions:
 
 # Controls when the workflow will run
 on:
+  workflow_dispatch:
   push:
     branches-ignore:
       - main
@@ -93,7 +94,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PAT }}
 
   uat-deploy:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: 
       - versioning
       - x64-build
@@ -131,7 +132,7 @@ jobs:
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.x64_tag }}.SNAPSHOT arch=amd64 labels=uat
 
   promote:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: 
       - versioning
       - x64-build
@@ -196,7 +197,7 @@ jobs:
           vars: stateful_set_name=uat-${{ env.STATEFUL_SET_NAME }}
 
   deploy:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: 
       - versioning
       - promote
