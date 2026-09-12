@@ -29,3 +29,10 @@ builds `deploy/` for x64 and ARM64 using the published UBI base image, publishes
 `x64-ansible-` / `arm64-ansible-` architecture tags and an `ansible-` common tag,
 and deploys runners with the `ansible` label. Main runs also update
 `ansible-latest`. The existing bootstrap workflow remains available separately.
+
+The Ansible Agent Image workflow also runs on non-main pushes that change
+`deploy/**` or its workflow file, and on pull requests targeting `main` that
+change those paths, `deploy.yml`, `docker.yml`, or `roles/deploy/**`. Weekly
+builds run on Sundays at 12:00 UTC. Branch pushes build snapshot images;
+pull requests, weekly builds, and manual runs execute the full build, UAT,
+promotion, cleanup, and deployment pipeline.
