@@ -22,19 +22,10 @@ spec:
       nodeSelector:
         kubernetes.io/role: worker
         kubernetes.io/arch: {{ arch }}
-      affinity:
 {% if mount_docker_socket | default(true) | bool %}
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/hostname
-                    operator: In
-                    values:
-{% for docker_host in groups['docker'] %}
-                      - {{ docker_host }}
-{% endfor %}
+        docker: "true"
 {% endif %}
+      affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
