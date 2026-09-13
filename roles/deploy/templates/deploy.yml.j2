@@ -22,6 +22,9 @@ spec:
       nodeSelector:
         kubernetes.io/role: worker
         kubernetes.io/arch: {{ arch }}
+{% if mount_docker_socket | default(true) | bool %}
+        docker: "true"
+{% endif %}
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -45,8 +48,10 @@ spec:
             cpu: {{ cpu_requests | default('100m') }}
             memory: {{ mem_requests | default('256Mi') }}
         volumeMounts:
+{% if mount_docker_socket | default(true) | bool %}
           - name: docker-socket
             mountPath: /var/run/docker.sock
+{% endif %}
           - name: workdir
             mountPath: /usr/mware/agent/_work
         env:
@@ -105,9 +110,11 @@ spec:
           successThreshold: 1
           failureThreshold: 10
       volumes:
+{% if mount_docker_socket | default(true) | bool %}
       - name: docker-socket
         hostPath:
           path: /var/run/docker.sock
           type: Socket
+{% endif %}
       - name: workdir
         emptyDir: {}

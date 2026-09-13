@@ -8,6 +8,7 @@ permissions:
 
 # Controls when the workflow will run
 on:
+  workflow_dispatch:
   push:
     branches-ignore:
       - main
@@ -111,7 +112,7 @@ jobs:
 
   deploy:
     # comment this line to debug the entire pipeline
-    if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: 
       - versioning
       - arm64-build
@@ -130,6 +131,7 @@ jobs:
         with:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.yml
+          hosts: game-k3s
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
       - uses: espresso-software/actions/ansible/run-playbook@main
         env:
@@ -137,10 +139,11 @@ jobs:
         with:
           playbook_path: deploy.yml
           inventory_path: inventory/hosts.yml
-          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT arch=arm64 labels=uat
+          hosts: game-k3s
+          vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }} tag=${{ needs.versioning.outputs.arm64_tag }}.SNAPSHOT arch=arm64 labels=uat mount_docker_socket=false
   
   promote:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs: 
       - versioning
       - arm64-build
@@ -187,7 +190,7 @@ jobs:
           arm64_tag: ${{ needs.versioning.outputs.arm64_tag }}
       
   cleanup:
-    if: github.event.pull_request || github.event_name == 'schedule'
+    if: github.event.pull_request || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     needs:
       - deploy
     runs-on:
@@ -204,7 +207,5 @@ jobs:
         with:
           playbook_path: cleanup.yml
           inventory_path: inventory/hosts.yml
+          hosts: game-k3s
           vars: stateful_set_name=${{ env.STATEFUL_SET_NAME }}
-
-        
-        
